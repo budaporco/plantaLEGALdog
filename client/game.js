@@ -15,6 +15,8 @@ const elements = {
     gameScreen: document.getElementById('game-screen'),
     nicknameInput: document.getElementById('nickname-input'),
     loginBtn: document.getElementById('login-btn'),
+    autoLoginCheckbox: document.getElementById('auto-login-check'),
+    logoutBtn: document.getElementById('logout-btn'),
     farmGrid: document.getElementById('farm-grid'),
     playerName: document.getElementById('player-name'),
     playerCoins: document.getElementById('player-coins'),
@@ -179,6 +181,10 @@ if(sidebar) {
                 <input type="range" id="volume-slider" min="0" max="100" value="50" style="width:100%;">
                 <p id="volume-val" style="text-align:center; color:#ccc;">50%</p>
             </div>
+
+            <div style="margin-top:20px; border-top:1px solid #444; padding-top:20px;">
+                <button id="logout-btn" style="width:100%; background:#f44336;">🚪 Sair / Deslogar</button>
+            </div>
             
             <div style="margin-top:20px; text-align:center;">
                 <small>PlantaLegalDog v1.1</small>
@@ -190,6 +196,7 @@ if(sidebar) {
     const closeSettings = settingsModal.querySelector('#close-settings');
     const volSlider = settingsModal.querySelector('#volume-slider');
     const volVal = settingsModal.querySelector('#volume-val');
+    const logoutBtn = settingsModal.querySelector('#logout-btn');
 
     settingsBtn.onclick = () => {
         settingsModal.classList.remove('hidden');
@@ -210,6 +217,13 @@ if(sidebar) {
         
         // Resume context if needed when interacting
         if (audioCtx.state === 'suspended') audioCtx.resume();
+    };
+
+    logoutBtn.onclick = () => {
+        if(confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('autoLoginName');
+            location.reload();
+        }
     };
 
     // Help Modal Logic
@@ -391,12 +405,33 @@ function playSound(type) {
 
 // --- Initialization ---
 
+// Check for Auto-Login
+const savedName = localStorage.getItem('autoLoginName');
+if (savedName) {
+    elements.nicknameInput.value = savedName;
+    if (elements.autoLoginCheckbox) elements.autoLoginCheckbox.checked = true;
+    // Auto connect
+    setTimeout(() => connect(savedName), 500);
+}
+
 elements.loginBtn.addEventListener('click', () => {
     const nickname = elements.nicknameInput.value.trim();
     if (nickname) {
+        if (elements.autoLoginCheckbox && elements.autoLoginCheckbox.checked) {
+            localStorage.setItem('autoLoginName', nickname);
+        } else {
+            localStorage.removeItem('autoLoginName');
+        }
         connect(nickname);
     }
 });
+
+if (elements.logoutBtn) {
+    elements.logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('autoLoginName');
+        location.reload();
+    });
+}
 
 function connect(nickname) {
     // Check if we are running locally or in production

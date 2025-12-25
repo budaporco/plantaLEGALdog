@@ -3,28 +3,28 @@
     "cqc3ch7au": {
       "animals": [
         {
-          "hunger": 99,
+          "hunger": 100,
           "id": 1766689231500.1677,
           "lastProduce": 1766695306706,
           "rarity": "uncommon",
           "type": "vaca"
         },
         {
-          "hunger": 98,
+          "hunger": 100,
           "id": 1766689232635.1157,
           "lastProduce": 1766695311521,
           "rarity": "uncommon",
           "type": "vaca"
         },
         {
-          "hunger": 93,
+          "hunger": 100,
           "id": 1766689233268.061,
           "lastProduce": 1766695311993,
           "rarity": "common",
           "type": "vaca"
         },
         {
-          "hunger": 51,
+          "hunger": 61,
           "id": 1766692193533.8477,
           "lastProduce": 1766692193533,
           "name": "Potro Comum",
@@ -38,7 +38,7 @@
           "type": "potro"
         },
         {
-          "hunger": 53,
+          "hunger": 73,
           "id": 1766692197996.7346,
           "lastProduce": 1766692197996,
           "name": "Potro Raro",
@@ -52,42 +52,42 @@
           "type": "potro"
         },
         {
-          "hunger": 50,
+          "hunger": 66,
           "id": 1766694037556.147,
           "lastProduce": 1766695312321,
           "rarity": "common",
           "type": "vaca"
         },
         {
-          "hunger": 55,
+          "hunger": 71,
           "id": 1766694037787.5674,
           "lastProduce": 1766695312649,
           "rarity": "rare",
           "type": "vaca"
         },
         {
-          "hunger": 72,
+          "hunger": 80,
           "id": 1766694038147.3318,
           "lastProduce": 1766695312992,
           "rarity": "rare",
           "type": "vaca"
         },
         {
-          "hunger": 68,
+          "hunger": 84,
           "id": 1766694038563.3599,
           "lastProduce": 1766695313337,
           "rarity": "rare",
           "type": "vaca"
         },
         {
-          "hunger": 59,
+          "hunger": 78,
           "id": 1766694039619.5535,
           "lastProduce": 1766695313689,
           "rarity": "uncommon",
           "type": "vaca"
         },
         {
-          "hunger": 70,
+          "hunger": 80,
           "id": 1766694040315.8828,
           "lastProduce": 1766695313985,
           "rarity": "uncommon",
