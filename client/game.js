@@ -21,8 +21,13 @@ const elements = {
     playerList: document.getElementById('player-list'),
     animalSection: document.createElement('div'), 
     workerSection: document.createElement('div'),
-    farmTitle: document.createElement('h2') // New
+    farmTitle: document.createElement('h2'),
+    rightSidebar: document.createElement('div') // New Right Sidebar
 };
+
+// Insert Right Sidebar
+elements.rightSidebar.className = 'right-sidebar';
+elements.gameScreen.appendChild(elements.rightSidebar);
 
 // Insert Farm Title above grid
 elements.farmGrid.parentElement.insertBefore(elements.farmTitle, elements.farmGrid);
@@ -85,9 +90,12 @@ if(sidebar) {
     const workerPanel = document.createElement('div');
     workerPanel.className = 'panel';
     workerPanel.innerHTML = `
-        <h3>👷 Funcionários</h3>
-        <p>Ajudantes: <span id="worker-count">0</span></p>
-        <button id="hire-btn" style="width:100%; font-size:0.8rem">Contratar (500💰)</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" id="worker-header">
+            <h3 style="margin:0; border:none;">👷 Funcionários</h3>
+            <span id="worker-toggle">▼</span>
+        </div>
+        <p>Total: <span id="worker-count">0</span></p>
+        <button id="hire-btn" style="width:100%; font-size:0.8rem; margin-bottom:10px;">Contratar (500💰)</button>
         <div id="worker-list" style="margin-top:10px;"></div>
         <small>Colhem automaticamente!</small>
     `;
@@ -95,6 +103,16 @@ if(sidebar) {
     elements.workerCount = workerPanel.querySelector('#worker-count');
     elements.hireBtn = workerPanel.querySelector('#hire-btn');
     elements.workerList = workerPanel.querySelector('#worker-list');
+    elements.workerToggle = workerPanel.querySelector('#worker-toggle');
+    elements.workerHeader = workerPanel.querySelector('#worker-header');
+
+    // Toggle Logic
+    let isWorkerOpen = true;
+    elements.workerHeader.onclick = () => {
+        isWorkerOpen = !isWorkerOpen;
+        elements.workerList.style.display = isWorkerOpen ? 'block' : 'none';
+        elements.workerToggle.textContent = isWorkerOpen ? '▼' : '▶';
+    };
 
     elements.hireBtn.onclick = () => {
         ws.send(JSON.stringify({ type: 'HIRE_WORKER' }));
@@ -364,6 +382,8 @@ function renderGrid(plots) {
     });
 }
 
+const RARITY_VALUE = { 'legendary': 5, 'epic': 4, 'rare': 3, 'uncommon': 2, 'common': 1 };
+
 function updateSelf(player) {
     elements.playerName.textContent = player.nickname;
     
@@ -386,7 +406,12 @@ function updateSelf(player) {
 
         elements.workerList.innerHTML = '';
         if (Array.isArray(player.workers)) {
-            player.workers.forEach(w => {
+            // Sort by Rarity Descending
+            const sortedWorkers = [...player.workers].sort((a, b) => {
+                return (RARITY_VALUE[b.rarity] || 1) - (RARITY_VALUE[a.rarity] || 1);
+            });
+
+            sortedWorkers.forEach(w => {
                 const div = document.createElement('div');
                 div.className = `worker-card rarity-${w.rarity || 'common'}`;
 
@@ -449,23 +474,43 @@ function updateSelf(player) {
         }
     }
 
-    // Update Animals
-    if(elements.animalPen && player.animals) {
-        elements.animalPen.innerHTML = '';
+    // Update Animals (Main Panel + Right Sidebar)
+    if(player.animals) {
+        if (elements.animalPen) elements.animalPen.innerHTML = '';
+        if (elements.rightSidebar) elements.rightSidebar.innerHTML = '';
+
         player.animals.forEach((animal, index) => {
-            const div = document.createElement('div');
             const info = animalsData[animal.type];
             const isReady = (Date.now() - animal.lastProduce) >= (info.interval * 1000);
             
-            // Apply Rarity Class
-            if (animal.rarity) {
-                div.classList.add(`rarity-${animal.rarity}`);
-            } else {
-                div.classList.add('rarity-common');
+            // 1. Right Sidebar Shortcuts (Only Cows)
+            if (animal.type === 'vaca') {
+                const shortcut = document.createElement('div');
+                shortcut.className = `cow-shortcut ${isReady ? 'ready' : ''}`;
+                shortcut.innerHTML = '🐮';
+                shortcut.title = isReady ? 'Coletar Leite!' : 'Produzindo...';
+                
+                if (isReady) {
+                    shortcut.onclick = () => {
+                        playSound('harvest');
+                        ws.send(JSON.stringify({ type: 'COLLECT_ANIMAL', animalIndex: index }));
+                    };
+                }
+                if (elements.rightSidebar) elements.rightSidebar.appendChild(shortcut);
             }
 
-            // Horse Specific UI
-            if (animal.type === 'potro') {
+            // 2. Main Panel Rendering (Existing Logic)
+            if (elements.animalPen) {
+                const div = document.createElement('div');
+                // Apply Rarity Class
+                if (animal.rarity) {
+                    div.classList.add(`rarity-${animal.rarity}`);
+                } else {
+                    div.classList.add('rarity-common');
+                }
+
+                // Horse Specific UI
+                if (animal.type === 'potro') {
                 div.className = `animal-card rarity-${animal.rarity || 'common'}`;
                 
                 const hungerPct = Math.max(0, 100 - animal.hunger);
@@ -520,8 +565,9 @@ function updateSelf(player) {
             }
 
             elements.animalPen.appendChild(div);
-        });
-    }
+        }
+    });
+}
 }
 
 function renderPlayerList(players) {

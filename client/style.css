@@ -148,7 +148,43 @@ button:hover { filter: brightness(1.1); }
     gap: 15px;
     border-right: 4px solid #444;
     overflow-y: auto;
+    flex-shrink: 0; /* Prevent shrinking */
 }
+
+.right-sidebar {
+    width: 80px;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    border-left: 2px solid rgba(255,255,255,0.1);
+}
+
+.cow-shortcut {
+    width: 50px;
+    height: 50px;
+    background: #333;
+    border-radius: 50%;
+    border: 2px solid #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.cow-shortcut.ready {
+    border-color: #fff;
+    box-shadow: 0 0 10px #fff;
+    animation: pulse 1s infinite;
+    background: #4caf50;
+}
+
+.cow-shortcut:hover { transform: scale(1.1); }
 
 .panel {
     background: var(--panel-bg);
