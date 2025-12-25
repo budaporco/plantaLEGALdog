@@ -4,7 +4,7 @@ const http = require('http');
 const crypto = require('crypto');
 const { GameState } = require('./gameState');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '../client');
 console.log('Server starting...');
 console.log('PUBLIC_DIR resolved to:', PUBLIC_DIR);
@@ -246,6 +246,17 @@ function handleMessage(client, message) {
                 }
                 break;
 
+            case 'BUY_DEED':
+                if (!client.id) return;
+                const deedResult = game.buyDeed(client.id);
+                if (deedResult.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'System', text: `${game.getPlayer(client.id).nickname} comprou uma Escritura de Fazenda e ganhou Prestígio!` });
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: deedResult.reason }));
+                }
+                break;
+
             case 'COLLECT_ANIMAL':
                 if (!client.id) return;
                 const collectResult = game.collectAnimal(client.id, data.animalIndex);
@@ -275,6 +286,77 @@ function handleMessage(client, message) {
                     broadcast({ type: 'CHAT', from: 'System', text: `${game.getPlayer(client.id).nickname} inscreveu um cavalo na corrida!` });
                 } else {
                     ws.send(JSON.stringify({ type: 'ERROR', message: raceResult.reason }));
+                }
+                break;
+
+            case 'JOIN_QUICK_RACE':
+                if (!client.id) return;
+                const qRaceResult = game.joinQuickRace(client.id, data.animalIndex);
+                if (qRaceResult.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'System', text: `${game.getPlayer(client.id).nickname} entrou na Corrida Rápida!` });
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: qRaceResult.reason }));
+                }
+                break;
+
+            case 'CREATE_AUCTION':
+                if (!client.id) return;
+                const auctionRes = game.createAuction(client.id, data.itemType, data.itemIndex);
+                if (auctionRes.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'Leiloeiro', text: `Novo item no leilão: ${auctionRes.auction.item.name || 'Item'} (${auctionRes.auction.rarity})!` });
+                    
+                    // Notification for Epic/Legendary
+                    if (['epic', 'legendary'].includes(auctionRes.auction.rarity)) {
+                        broadcast({ type: 'RARE_AUCTION_NOTIFY', rarity: auctionRes.auction.rarity });
+                    }
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: auctionRes.reason }));
+                }
+                break;
+
+            case 'PLACE_BID':
+                if (!client.id) return;
+                const bidRes = game.placeBid(client.id, data.auctionId);
+                if (bidRes.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'Leiloeiro', text: `Novo lance de ${game.getPlayer(client.id).nickname}!` });
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: bidRes.reason }));
+                }
+                break;
+
+            case 'UPGRADE_COW_RARITY':
+                if (!client.id) return;
+                const upRes = game.upgradeCowRarity(client.id, data.targetId, data.cowIndex);
+                if (upRes.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'System', text: `${game.getPlayer(client.id).nickname} melhorou uma vaca de ${game.getPlayer(data.targetId).nickname} para ${upRes.newRarity}!` });
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: upRes.reason }));
+                }
+                break;
+
+            case 'BREED_HORSES':
+                if (!client.id) return;
+                const breedRes = game.breedHorses(client.id, data.parent1, data.parent2);
+                if (breedRes.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    broadcast({ type: 'CHAT', from: 'Estábulo', text: `${game.getPlayer(client.id).nickname} criou um novo potro: ${breedRes.childName}!` });
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: breedRes.reason }));
+                }
+                break;
+
+            case 'BUY_TALENT':
+                if (!client.id) return;
+                const talentRes = game.buyTalent(client.id, data.talentId);
+                if (talentRes.success) {
+                    broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+                    // Private confirmation or subtle effect? Let's just update game state.
+                } else {
+                    ws.send(JSON.stringify({ type: 'ERROR', message: talentRes.reason }));
                 }
                 break;
 
@@ -319,6 +401,16 @@ setInterval(() => {
                 text: `O vencedor foi ${winnerName}! Prêmio: ${prizePool} moedas!` 
             });
             game.lastRaceResult = null; // Clear
+        }
+
+        if (game.lastQuickRaceResult) {
+            const { winnerName, prizePool } = game.lastQuickRaceResult;
+            broadcast({ 
+                type: 'CHAT', 
+                from: '⚡ RÁPIDA', 
+                text: `Vencedor Rápido: ${winnerName}! Prêmio: ${prizePool} moedas!` 
+            });
+            game.lastQuickRaceResult = null; // Clear
         }
     }
 }, 1000);

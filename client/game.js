@@ -6,6 +6,9 @@ let cropsData = {};
 let animalsData = {}; 
 let selectedCrop = null;
 let playersData = []; // Cache all players
+let currentRaceState = null; // Cache race state
+let currentQuickRaceState = null; // Cache quick race state
+let breedingSelection = null; // Breeding state
 
 const elements = {
     loginScreen: document.getElementById('login-screen'),
@@ -29,6 +32,19 @@ const elements = {
 elements.rightSidebar.className = 'right-sidebar';
 elements.gameScreen.appendChild(elements.rightSidebar);
 
+// Notification Bell
+const bell = document.createElement('div');
+bell.id = 'notification-bell';
+bell.className = 'notification-bell hidden';
+bell.innerHTML = '🔔';
+bell.onclick = () => {
+    bell.classList.remove('active');
+    bell.classList.add('hidden');
+    // Scroll to auction panel
+    elements.auctionList.scrollIntoView({ behavior: 'smooth' });
+};
+document.body.appendChild(bell);
+
 // Insert Farm Title above grid
 elements.farmGrid.parentElement.insertBefore(elements.farmTitle, elements.farmGrid);
 elements.farmTitle.style.textAlign = 'center';
@@ -43,13 +59,157 @@ if(sidebar) {
     const navPanel = document.createElement('div');
     navPanel.className = 'panel';
     navPanel.innerHTML = `
-        <button id="home-btn" style="width:100%; margin-bottom:5px;">🏠 Minha Fazenda</button>
-        <button id="help-btn" class="secondary" style="width:100%">📖 Ajuda / Guia</button>
+        <div style="display:flex; gap:5px;">
+            <button id="home-btn" style="flex:1;">🏠 Minha Fazenda</button>
+            <button id="settings-btn" style="width:40px; padding:0;">⚙️</button>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="talents-btn" class="secondary" style="flex:1;">🌳 Talentos</button>
+            <button id="help-btn" class="secondary" style="width:40px; padding:0;">?</button>
+        </div>
     `;
     sidebar.insertBefore(navPanel, sidebar.firstChild);
     
     navPanel.querySelector('#home-btn').onclick = () => {
         switchView(playerId);
+    };
+
+    // Talent Modal Logic
+    const talentsBtn = navPanel.querySelector('#talents-btn');
+    
+    const talentModal = document.createElement('div');
+    talentModal.className = 'modal hidden';
+    talentModal.id = 'talent-modal';
+    talentModal.innerHTML = `
+        <div class="modal-content" style="max-width:500px;">
+            <span class="close-modal" id="close-talents">&times;</span>
+            <h2 style="margin-top:0;">🌳 Árvore de Talentos</h2>
+            <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Melhore sua fazenda com vantagens permanentes!</p>
+            <div id="talent-list" style="display:grid; gap:10px;"></div>
+        </div>
+    `;
+    document.body.appendChild(talentModal);
+
+    const closeTalents = talentModal.querySelector('#close-talents');
+    const talentList = talentModal.querySelector('#talent-list');
+
+    talentsBtn.onclick = () => {
+        renderTalents();
+        talentModal.classList.remove('hidden');
+    };
+
+    closeTalents.onclick = () => {
+        talentModal.classList.add('hidden');
+    };
+
+    talentModal.onclick = (e) => {
+        if (e.target === talentModal) talentModal.classList.add('hidden');
+    };
+
+    window.renderTalents = function() {
+        if (!talentList || talentModal.classList.contains('hidden')) return;
+        
+        const player = playersData.find(p => p.id === playerId);
+        if (!player) return;
+
+        talentList.innerHTML = '';
+        const userTalents = player.talents || {};
+
+        Object.keys(TALENTS_CONFIG).forEach(id => {
+            const config = TALENTS_CONFIG[id];
+            const currentLevel = userTalents[id] || 0;
+            const isMaxed = currentLevel >= config.maxLevel;
+            const cost = Math.floor(config.baseCost * Math.pow(config.costMult, currentLevel));
+            
+            const div = document.createElement('div');
+            div.className = 'panel';
+            div.style.background = '#222';
+            div.style.border = '1px solid #444';
+            div.style.display = 'flex';
+            div.style.gap = '10px';
+            div.style.alignItems = 'center';
+            div.style.padding = '10px';
+
+            div.innerHTML = `
+                <div style="font-size:2rem; background:#333; width:50px; height:50px; display:flex; justify-content:center; align-items:center; border-radius:8px;">${config.icon}</div>
+                <div style="flex:1;">
+                    <h4 style="margin:0; color:#fff;">${config.name} <span style="color:gold; font-size:0.8rem;">Lv. ${currentLevel}/${config.maxLevel}</span></h4>
+                    <small style="color:#aaa;">${config.desc}</small>
+                </div>
+                <div style="text-align:right;">
+                    ${isMaxed ? 
+                        `<button disabled style="background:#555; color:#aaa; cursor:default;">MAX</button>` :
+                        `<button class="buy-talent-btn" data-id="${id}" style="background:${player.coins >= cost ? '#4caf50' : '#f44336'}; min-width:80px;">
+                            ${formatNumber(cost)}💰<br><small>Evoluir</small>
+                        </button>`
+                    }
+                </div>
+            `;
+            
+            if (!isMaxed) {
+                const btn = div.querySelector('.buy-talent-btn');
+                btn.onclick = () => {
+                    if (player.coins >= cost) {
+                        ws.send(JSON.stringify({ type: 'BUY_TALENT', talentId: id }));
+                        // Optimistic update or wait for server? Wait for server is safer.
+                    } else {
+                        alert(`Você precisa de ${formatNumber(cost)} moedas!`);
+                    }
+                };
+            }
+
+            talentList.appendChild(div);
+        });
+    };
+
+    // Settings Modal Logic
+    const settingsBtn = navPanel.querySelector('#settings-btn');
+    
+    // Create Settings Modal dynamically
+    const settingsModal = document.createElement('div');
+    settingsModal.className = 'modal hidden';
+    settingsModal.id = 'settings-modal';
+    settingsModal.innerHTML = `
+        <div class="modal-content" style="max-width:300px;">
+            <span class="close-modal" id="close-settings">&times;</span>
+            <h2 style="margin-top:0;">⚙️ Configurações</h2>
+            
+            <div style="margin-top:20px;">
+                <label for="volume-slider" style="display:block; margin-bottom:10px;">🔊 Volume Principal</label>
+                <input type="range" id="volume-slider" min="0" max="100" value="50" style="width:100%;">
+                <p id="volume-val" style="text-align:center; color:#ccc;">50%</p>
+            </div>
+            
+            <div style="margin-top:20px; text-align:center;">
+                <small>PlantaLegalDog v1.1</small>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(settingsModal);
+
+    const closeSettings = settingsModal.querySelector('#close-settings');
+    const volSlider = settingsModal.querySelector('#volume-slider');
+    const volVal = settingsModal.querySelector('#volume-val');
+
+    settingsBtn.onclick = () => {
+        settingsModal.classList.remove('hidden');
+    };
+
+    closeSettings.onclick = () => {
+        settingsModal.classList.add('hidden');
+    };
+    
+    settingsModal.onclick = (e) => {
+        if (e.target === settingsModal) settingsModal.classList.add('hidden');
+    };
+
+    volSlider.oninput = (e) => {
+        const val = e.target.value;
+        volVal.textContent = val + '%';
+        masterGainNode.gain.value = val / 100;
+        
+        // Resume context if needed when interacting
+        if (audioCtx.state === 'suspended') audioCtx.resume();
     };
 
     // Help Modal Logic
@@ -73,6 +233,18 @@ if(sidebar) {
 
     // Worker Panel
     // Race Status Panel
+    const auctionPanel = document.createElement('div');
+    auctionPanel.className = 'panel';
+    auctionPanel.style.border = '2px solid #9c27b0';
+    auctionPanel.innerHTML = `
+        <h3>🏛️ Leilões</h3>
+        <div id="auction-list" style="max-height:150px; overflow-y:auto; font-size:0.8rem;">
+            <p style="text-align:center; color:#888;">Nenhum leilão ativo.</p>
+        </div>
+    `;
+    sidebar.insertBefore(auctionPanel, sidebar.children[2]);
+    elements.auctionList = auctionPanel.querySelector('#auction-list');
+
     const racePanel = document.createElement('div');
     racePanel.className = 'panel';
     racePanel.style.border = '2px solid gold';
@@ -127,12 +299,45 @@ if(sidebar) {
             <button id="buy-cow-btn" style="width:100%; font-size:0.8rem">Comprar Vaca (500💰)</button>
             <button id="buy-horse-btn" style="width:100%; font-size:0.8rem; background:#ff9800;">Comprar Potro (5000💰)</button>
         </div>
-        <div id="animal-pen" class="animal-pen"></div>
+        
+        <!-- Cow Section -->
+        <div class="animal-section-header" id="cow-header">
+            <span>🐄 Vacas</span> <span id="cow-toggle">▼</span>
+        </div>
+        <div id="cow-list" class="animal-list-grid"></div>
+
+        <!-- Horse Section -->
+        <div class="animal-section-header" id="horse-header" style="margin-top:10px;">
+            <span>🐎 Cavalos</span> <span id="horse-toggle">▼</span>
+        </div>
+        <div id="horse-list" class="animal-list-stack"></div>
     `;
     sidebar.insertBefore(animalPanel, sidebar.children[3]);
-    elements.animalPen = animalPanel.querySelector('#animal-pen');
+    
+    elements.cowList = animalPanel.querySelector('#cow-list');
+    elements.horseList = animalPanel.querySelector('#horse-list');
+    elements.cowHeader = animalPanel.querySelector('#cow-header');
+    elements.horseHeader = animalPanel.querySelector('#horse-header');
+    elements.cowToggle = animalPanel.querySelector('#cow-toggle');
+    elements.horseToggle = animalPanel.querySelector('#horse-toggle');
     elements.buyCowBtn = animalPanel.querySelector('#buy-cow-btn');
     elements.buyHorseBtn = animalPanel.querySelector('#buy-horse-btn');
+
+    // Toggle Logic for Animals
+    let isCowOpen = true;
+    let isHorseOpen = true;
+
+    elements.cowHeader.onclick = () => {
+        isCowOpen = !isCowOpen;
+        elements.cowList.style.display = isCowOpen ? 'grid' : 'none';
+        elements.cowToggle.textContent = isCowOpen ? '▼' : '▶';
+    };
+
+    elements.horseHeader.onclick = () => {
+        isHorseOpen = !isHorseOpen;
+        elements.horseList.style.display = isHorseOpen ? 'block' : 'none';
+        elements.horseToggle.textContent = isHorseOpen ? '▼' : '▶';
+    };
 
     elements.buyCowBtn.onclick = () => {
         ws.send(JSON.stringify({ type: 'BUY_ANIMAL', animalType: 'vaca' }));
@@ -144,6 +349,9 @@ if(sidebar) {
 
 // --- Audio System (Web Audio API) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGainNode = audioCtx.createGain();
+masterGainNode.connect(audioCtx.destination);
+masterGainNode.gain.value = 0.5; // Default 50%
 
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -151,7 +359,7 @@ function playSound(type) {
     const gainNode = audioCtx.createGain();
     
     osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(masterGainNode); // Connect to Master instead of Destination
     
     if (type === 'coin') {
         osc.type = 'sine';
@@ -194,16 +402,14 @@ function connect(nickname) {
     // Check if we are running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
-    // IF PRODUCTION: Replace this URL with your Render Backend URL later
-    const PROD_URL = 'wss://plantalegaldog.onrender.com'; 
-    
     let wsUrl;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    
     if (isLocal) {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         wsUrl = `${protocol}//${window.location.host}`;
     } else {
-        // When hosted on Firebase, connect to Render Backend
-        wsUrl = PROD_URL;
+        // Dynamic production URL (Same Origin)
+        wsUrl = `${protocol}//${window.location.host}`;
     }
 
     ws = new WebSocket(wsUrl);
@@ -243,6 +449,8 @@ function handleMessage(data) {
 
         case 'UPDATE_GAME':
             playersData = data.state.players;
+            currentRaceState = data.state.raceState;
+            currentQuickRaceState = data.state.quickRaceState;
             
             // Update Race UI
             const rState = data.state.raceState;
@@ -268,9 +476,23 @@ function handleMessage(data) {
             }
             // Always update self stats (coins, etc)
             const me = playersData.find(p => p.id === playerId);
-            if (me) updateSelf(me);
+            if (me) {
+                updateSelf(me);
+                // Refresh talents if open
+                if (window.renderTalents) window.renderTalents();
+            }
             
             renderPlayerList(playersData);
+            renderAuctions(data.state.auctions);
+            break;
+
+        case 'RARE_AUCTION_NOTIFY':
+            const bell = document.getElementById('notification-bell');
+            if (bell) {
+                bell.classList.remove('hidden');
+                bell.classList.add('active');
+                playSound('coin'); // Sound alert
+            }
             break;
 
         case 'UPDATE_SELF':
@@ -286,6 +508,47 @@ function handleMessage(data) {
             break;
     }
 }
+
+function renderAuctions(auctions) {
+    if (!elements.auctionList) return;
+    elements.auctionList.innerHTML = '';
+
+    if (!auctions || auctions.length === 0) {
+        elements.auctionList.innerHTML = '<p style="text-align:center; color:#888;">Nenhum leilão ativo.</p>';
+        return;
+    }
+
+    auctions.forEach(auction => {
+        const div = document.createElement('div');
+        div.style.background = 'rgba(0,0,0,0.3)';
+        div.style.padding = '5px';
+        div.style.marginBottom = '5px';
+        div.style.borderRadius = '5px';
+        div.style.borderLeft = `3px solid ${auction.rarity === 'legendary' ? 'gold' : (auction.rarity === 'epic' ? 'purple' : 'gray')}`;
+        
+        const timeLeft = Math.max(0, Math.floor((auction.endTime - Date.now()) / 1000));
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <strong>${auction.item.name || 'Item'}</strong>
+                <small>${mins}:${secs < 10 ? '0'+secs : secs}</small>
+            </div>
+            <div style="font-size:0.8rem; color:#aaa;">Vendedor: ${auction.sellerName}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                <span style="color:gold;">${auction.price}💰</span>
+                ${auction.sellerId !== playerId ? `<button style="font-size:0.7rem; padding:2px 5px;" onclick="placeBid('${auction.id}')">LANCE</button>` : '<small>Seu Item</small>'}
+            </div>
+            ${auction.bidderName ? `<small style="color:#4caf50;">Lance: ${auction.bidderName}</small>` : ''}
+        `;
+        elements.auctionList.appendChild(div);
+    });
+}
+
+window.placeBid = function(auctionId) {
+    ws.send(JSON.stringify({ type: 'PLACE_BID', auctionId }));
+};
 
 function switchView(targetId) {
     currentTargetId = targetId;
@@ -313,10 +576,18 @@ const cropIcons = {
     'morango': '🍓'
 };
 
+const TALENTS_CONFIG = {
+    'growth_speed': { name: 'Fertilizante Mágico', desc: 'Plantas crescem 1% mais rápido por nível.', baseCost: 1000, costMult: 1.5, maxLevel: 50, icon: '🧪' },
+    'sell_bonus': { name: 'Lábia de Comerciante', desc: 'Venda colheitas por 1% a mais por nível.', baseCost: 2000, costMult: 2.0, maxLevel: 20, icon: '💰' },
+    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50, icon: '🏗️' }
+};
+
 // --- Rendering ---
 
-function renderShop() {
+function renderShop(player = null) {
     elements.shopList.innerHTML = '';
+    
+    // 1. Crops
     Object.keys(cropsData).forEach(key => {
         const crop = cropsData[key];
         const div = document.createElement('div');
@@ -328,6 +599,36 @@ function renderShop() {
         div.onclick = () => selectCrop(key, div);
         elements.shopList.appendChild(div);
     });
+
+    // 2. Prestige Items (Deed)
+    if (player) {
+        const deedCount = player.deedCount || 0;
+        const deedPrice = 1000000 * Math.pow(3, deedCount);
+        
+        const div = document.createElement('div');
+        div.className = 'shop-item special';
+        div.style.border = '2px solid gold';
+        div.style.marginTop = '10px';
+        div.style.background = 'linear-gradient(45deg, #333, #4a3b00)';
+        
+        div.innerHTML = `
+            <span style="color:gold">📜 Escritura</span>
+            <small style="color:#ffeb3b">${formatNumber(deedPrice)}💰</small>
+            <div style="font-size:0.7rem; color:#aaa">Nível: ${deedCount}</div>
+        `;
+        div.onclick = () => {
+            if(confirm(`Comprar Escritura de Fazenda por ${formatNumber(deedPrice)} moedas?`)) {
+                ws.send(JSON.stringify({ type: 'BUY_DEED' }));
+            }
+        };
+        elements.shopList.appendChild(div);
+    }
+}
+
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num;
 }
 
 function selectCrop(id, element) {
@@ -397,6 +698,45 @@ function updateSelf(player) {
     elements.playerCoins.textContent = player.coins;
     playerCoins = player.coins;
 
+    // Update Prestige Display
+    if (!elements.prestigeDisplay) {
+        const prestigeContainer = document.createElement('span');
+        prestigeContainer.style.marginLeft = '15px';
+        prestigeContainer.style.color = '#e040fb'; // Purple for prestige
+        prestigeContainer.style.fontWeight = 'bold';
+        prestigeContainer.innerHTML = '✨ <span id="prestige-val">0</span>';
+        
+        // Insert after coins (assuming parent is a header or stats bar)
+        if (elements.playerCoins.parentElement) {
+            elements.playerCoins.parentElement.appendChild(prestigeContainer);
+        }
+        elements.prestigeDisplay = prestigeContainer.querySelector('#prestige-val');
+    }
+    
+    if (elements.prestigeDisplay) {
+        elements.prestigeDisplay.textContent = player.prestige || 0;
+    }
+
+    // Update Merchant Seals Display
+    if (!elements.sealDisplay) {
+        const sealContainer = document.createElement('span');
+        sealContainer.style.marginLeft = '15px';
+        sealContainer.style.color = '#03a9f4'; // Blue for seals
+        sealContainer.style.fontWeight = 'bold';
+        sealContainer.innerHTML = '🛡️ <span id="seal-val">0</span>';
+        
+        if (elements.playerCoins.parentElement) {
+            elements.playerCoins.parentElement.appendChild(sealContainer);
+        }
+        elements.sealDisplay = sealContainer.querySelector('#seal-val');
+    }
+    if (elements.sealDisplay) {
+        elements.sealDisplay.textContent = player.merchantSeals || 0;
+    }
+
+    // Refresh Shop Prices (Dynamic Deed Cost)
+    renderShop(player);
+
     // Update Workers
     if(elements.workerList && player.workers) {
         // Atualiza o contador de texto
@@ -456,6 +796,10 @@ function updateSelf(player) {
                         <button class="up-btn secondary" data-stat="speed" style="font-size:0.7rem; padding:4px;" title="Speed: ${w.stats.speed.toFixed(1)} (Custa: ${w.level*200}💰)">🏃 ${w.stats.speed.toFixed(1)}</button>
                         <button class="up-btn secondary" data-stat="planting" style="font-size:0.7rem; padding:4px;" title="Planting: ${w.stats.planting} (Custa: ${w.level*200}💰)">🌱 ${w.stats.planting}</button>
                     </div>
+                    
+                    ${currentTargetId === playerId ? `
+                    <button class="action-btn secondary" style="width:100%; margin-top:5px; background:#5d4037;" onclick="sellItem('worker', ${player.workers.indexOf(w)})">🔨 Leiloar</button>
+                    ` : ''}
                 `;
 
                 // Bind Upgrade Buttons
@@ -478,6 +822,8 @@ function updateSelf(player) {
     if(player.animals) {
         if (elements.animalPen) elements.animalPen.innerHTML = '';
         if (elements.rightSidebar) elements.rightSidebar.innerHTML = '';
+        if (elements.cowList) elements.cowList.innerHTML = '';
+        if (elements.horseList) elements.horseList.innerHTML = '';
 
         player.animals.forEach((animal, index) => {
             const info = animalsData[animal.type];
@@ -499,9 +845,13 @@ function updateSelf(player) {
                 if (elements.rightSidebar) elements.rightSidebar.appendChild(shortcut);
             }
 
-            // 2. Main Panel Rendering (Existing Logic)
-            if (elements.animalPen) {
+            // 2. Main Panel Rendering (Split View)
+            if (elements.cowList && elements.horseList) {
+                const isHorse = animal.type === 'potro';
+                const targetContainer = isHorse ? elements.horseList : elements.cowList;
+                
                 const div = document.createElement('div');
+                
                 // Apply Rarity Class
                 if (animal.rarity) {
                     div.classList.add(`rarity-${animal.rarity}`);
@@ -510,64 +860,159 @@ function updateSelf(player) {
                 }
 
                 // Horse Specific UI
-                if (animal.type === 'potro') {
-                div.className = `animal-card rarity-${animal.rarity || 'common'}`;
-                
-                const hungerPct = Math.max(0, 100 - animal.hunger);
-                
-                // Check if already in race (We need raceState from global or passed down, 
-                // but currently we only have player.animals. 
-                // Let's assume the server rejects duplicates, but visually we can't tell easily without full state.
-                // However, we can make the buttons bigger at least.)
+                    if (isHorse) {
+                        div.className = `animal-card rarity-${animal.rarity || 'common'}`;
+                        
+                        const hungerPct = Math.max(0, 100 - animal.hunger);
+                        
+                        // Age Calculation (1 Day = 1 Year)
+                        const ONE_YEAR_MS = 24 * 60 * 60 * 1000;
+                        const ageYears = Math.floor((Date.now() - (animal.birthTime || Date.now())) / ONE_YEAR_MS);
+                        const isAdult = ageYears >= 3;
 
-                div.innerHTML = `
-                    <h4>🐎 ${animal.name || 'Potro'}</h4>
-                    <div class="stat-row">
-                        <span>⚡ ${animal.stats.speed.toFixed(1)}</span>
-                        <span>❤️ ${animal.stats.stamina}</span>
-                    </div>
-                    <div class="stat-row"><span>EXP: ${animal.stats.exp}</span></div>
+                        // Check if already in race (Normal or Quick)
+                        let isRegistered = false;
+                        let isQuickRegistered = false;
+
+                        if (currentRaceState && currentRaceState.entrants) {
+                             isRegistered = currentRaceState.entrants.some(e => e.playerId === playerId && e.animalIndex === index);
+                        }
+                        if (currentQuickRaceState && currentQuickRaceState.entrants) {
+                             isQuickRegistered = currentQuickRaceState.entrants.some(e => e.playerId === playerId && e.animalIndex === index);
+                        }
+
+                        div.innerHTML = `
+                            <div style="display:flex; justify-content:space-between;">
+                                <h4 style="margin:0">🐎 ${animal.name || 'Potro'}</h4>
+                                <small style="color:${isAdult ? '#4caf50' : '#aaa'}">${ageYears} Anos</small>
+                            </div>
+                            <div class="stat-row">
+                                <span>⚡ ${animal.stats.speed.toFixed(1)}</span>
+                                <span>❤️ ${animal.stats.stamina}</span>
+                            </div>
+                            <div class="stat-row"><span>EXP: ${animal.stats.exp}</span></div>
+                            
+                            <div class="progress-bar" title="Fome">
+                                <div class="progress-fill" style="width:${hungerPct}%; background:${hungerPct < 30 ? '#f44336' : '#8bc34a'};"></div>
+                            </div>
+                            
+                            ${animal.energy !== undefined ? `
+                            <div class="progress-bar" title="Energia (Stamina)" style="margin-top:2px;">
+                                <div class="progress-fill" style="width:${Math.min(100, (animal.energy / (animal.stats.stamina * 10)) * 100)}%; background:#2196f3;"></div>
+                            </div>
+                            ` : ''}
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px; margin-top:8px;">
+                                <button class="action-btn secondary" style="font-size:0.8rem; padding:4px;" data-action="feed">🍎 Comer</button>
+                                
+                                ${isRegistered ? 
+                                    `<button class="action-btn" style="font-size:0.8rem; padding:4px; background:#4caf50; cursor:default;" disabled>Inscrito ✅</button>` :
+                                    `<button class="action-btn" style="font-size:0.8rem; padding:4px;" data-action="race" ${isQuickRegistered ? 'disabled' : ''}>🏁 Correr</button>`
+                                }
+
+                                ${isQuickRegistered ? 
+                                    `<button class="action-btn" style="font-size:0.8rem; padding:4px; background:#ff9800; cursor:default;" disabled>Rápida ⚡</button>` :
+                                    `<button class="action-btn" style="font-size:0.8rem; padding:4px; background:#ff9800;" data-action="quick-race" ${isRegistered ? 'disabled' : ''}>⚡ Rápida</button>`
+                                }
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px; margin-top:4px;">
+                                ${isAdult && currentTargetId === playerId ? `
+                                <button class="action-btn" style="font-size:0.8rem; padding:4px; background:#e91e63;" data-action="breed">❤️ Cruzar</button>
+                                ` : ''}
+                                ${currentTargetId === playerId ? `
+                                <button class="action-btn secondary" style="font-size:0.8rem; padding:4px; background:#5d4037;" onclick="sellItem('animal', ${index})">🔨 Leiloar</button>
+                                ` : ''}
+                            </div>
+                        `;
+
+                        div.querySelector('button[data-action="feed"]').onclick = (e) => {
+                            e.stopPropagation();
+                            ws.send(JSON.stringify({ type: 'FEED_ANIMAL', animalIndex: index }));
+                        };
+                        
+                        const breedBtn = div.querySelector('button[data-action="breed"]');
+                        if (breedBtn) {
+                            breedBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                if (breedingSelection === null) {
+                                    breedingSelection = index;
+                                    breedBtn.textContent = "Selecionado 💘";
+                                    breedBtn.disabled = true;
+                                    alert('Selecione o segundo cavalo adulto para cruzar!');
+                                } else if (breedingSelection === index) {
+                                    breedingSelection = null;
+                                    updateSelf(playersData.find(p => p.id === playerId));
+                                } else {
+                                    if (confirm('Cruzar estes dois cavalos por 2000 moedas?')) {
+                                        ws.send(JSON.stringify({ type: 'BREED_HORSES', parent1: breedingSelection, parent2: index }));
+                                    }
+                                    breedingSelection = null;
+                                    updateSelf(playersData.find(p => p.id === playerId));
+                                }
+                            };
+                        }
+
+                        const raceBtn = div.querySelector('button[data-action="race"]');
+                        if (raceBtn && !raceBtn.disabled) {
+                            raceBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                ws.send(JSON.stringify({ type: 'JOIN_RACE', animalIndex: index }));
+                            };
+                        }
+
+                        const quickRaceBtn = div.querySelector('button[data-action="quick-race"]');
+                        if (quickRaceBtn && !quickRaceBtn.disabled) {
+                            quickRaceBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                ws.send(JSON.stringify({ type: 'JOIN_QUICK_RACE', animalIndex: index }));
+                            };
+                        }
+                    } else {
+                    // Cows / Simple Animals
+                    div.className = `animal ${isReady ? 'ready' : ''} rarity-${animal.rarity || 'common'}`;
+                    div.innerHTML = '🐮';
+                    div.title = isReady ? 'Ordenhar!' : 'Descansando...';
                     
-                    <div class="progress-bar" title="Fome">
-                        <div class="progress-fill" style="width:${hungerPct}%; background:${hungerPct < 30 ? '#f44336' : '#8bc34a'};"></div>
-                    </div>
+                    if(isReady) {
+                        div.onclick = () => {
+                            playSound('harvest');
+                            ws.send(JSON.stringify({ type: 'COLLECT_ANIMAL', animalIndex: index }));
+                        };
+                    }
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
-                        <button class="action-btn secondary" style="font-size:0.9rem; padding:8px;" data-action="feed">🍎 Alimentar</button>
-                        <button class="action-btn" style="font-size:0.9rem; padding:8px;" data-action="race">🏁 Correr</button>
-                    </div>
-                `;
-
-                div.querySelector('button[data-action="feed"]').onclick = (e) => {
-                    e.stopPropagation();
-                    ws.send(JSON.stringify({ type: 'FEED_ANIMAL', animalIndex: index }));
-                };
-                div.querySelector('button[data-action="race"]').onclick = (e) => {
-                    e.stopPropagation();
-                    ws.send(JSON.stringify({ type: 'JOIN_RACE', animalIndex: index }));
-                    // Visual feedback (optimistic)
-                    e.target.textContent = "Inscrito ⏳";
-                    e.target.disabled = true;
-                    e.target.style.background = "#4caf50";
-                };
-            } else {
-                // Cows / Simple Animals
-                div.className = `animal ${isReady ? 'ready' : ''} rarity-${animal.rarity || 'common'}`;
-                div.innerHTML = '🐮';
-                div.title = isReady ? 'Ordenhar!' : 'Descansando...';
-                
-                if(isReady) {
-                    div.onclick = () => {
-                        playSound('harvest');
-                        ws.send(JSON.stringify({ type: 'COLLECT_ANIMAL', animalIndex: index }));
-                    };
+                    if (currentTargetId === playerId) {
+                         const sellBtn = document.createElement('div');
+                         sellBtn.innerHTML = '🔨';
+                         sellBtn.className = 'sell-icon';
+                         sellBtn.onclick = (e) => {
+                             e.stopPropagation();
+                             sellItem('animal', index);
+                         };
+                         div.appendChild(sellBtn);
+                    } else {
+                        // Upgrade Button for Visitors
+                        const upgradeBtn = document.createElement('div');
+                        upgradeBtn.innerHTML = '⬆️';
+                        upgradeBtn.className = 'upgrade-icon';
+                        upgradeBtn.onclick = (e) => {
+                             e.stopPropagation();
+                             upgradeCow(currentTargetId, index);
+                        };
+                        div.appendChild(upgradeBtn);
+                    }
                 }
-            }
 
-            elements.animalPen.appendChild(div);
-        }
-    });
-}
+                targetContainer.appendChild(div);
+            } else if (elements.animalPen) {
+                 // Fallback to single pen if split view not initialized
+                const div = document.createElement('div');
+                div.className = `animal ${isReady ? 'ready' : ''}`;
+                div.innerHTML = animal.type === 'vaca' ? '🐮' : '🐎';
+                elements.animalPen.appendChild(div);
+            }
+        });
+    }
 }
 
 function renderPlayerList(players) {
@@ -600,6 +1045,18 @@ function addChatMessage(from, text) {
 }
 
 // --- Interactions ---
+
+window.sellItem = function(type, index) {
+    if(confirm('Deseja leiloar este item? (Preço base definido pela raridade)')) {
+        ws.send(JSON.stringify({ type: 'CREATE_AUCTION', itemType: type, itemIndex: index }));
+    }
+};
+
+window.upgradeCow = function(targetId, index) {
+    if(confirm('Gastar Selos de Comerciante para melhorar a raridade desta vaca?')) {
+        ws.send(JSON.stringify({ type: 'UPGRADE_COW_RARITY', targetId: targetId, cowIndex: index }));
+    }
+};
 
 function handlePlotClick(index, plot) {
     if (currentTargetId === playerId) {

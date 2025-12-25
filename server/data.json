@@ -1,1134 +1,1953 @@
 {
   "players": {
-    "10zcvtldy": {
-      "id": "10zcvtldy",
-      "nickname": "buda",
-      "coins": 38,
-      "workers": [
-        {
-          "id": "w_y553p1mj8",
-          "name": "Ajudante",
-          "level": 1,
-          "exp": 0,
-          "rarity": "epic",
-          "stats": {
-            "stamina": 10,
-            "speed": 2,
-            "planting": 0
-          },
-          "state": {
-            "energy": 10,
-            "cooldown": 0,
-            "status": "idle"
-          }
-        },
-        {
-          "id": "w_dic0sbl68",
-          "name": "Ajudante",
-          "level": 1,
-          "exp": 0,
-          "rarity": "rare",
-          "stats": {
-            "stamina": 7,
-            "speed": 1.5,
-            "planting": 0
-          },
-          "state": {
-            "energy": 7,
-            "cooldown": 0,
-            "status": "idle"
-          }
-        },
-        {
-          "id": "w_qipb0bqjh",
-          "name": "Ajudante",
-          "level": 1,
-          "exp": 0,
-          "rarity": "common",
-          "stats": {
-            "stamina": 5,
-            "speed": 1,
-            "planting": 0
-          },
-          "state": {
-            "energy": 5,
-            "cooldown": 0,
-            "status": "idle"
-          }
-        },
-        {
-          "id": "w_ug300pcun",
-          "name": "Ajudante",
-          "level": 1,
-          "exp": 0,
-          "rarity": "uncommon",
-          "stats": {
-            "stamina": 6,
-            "speed": 1.2,
-            "planting": 0
-          },
-          "state": {
-            "energy": 6,
-            "cooldown": 0,
-            "status": "idle"
-          }
-        }
-      ],
+    "cqc3ch7au": {
       "animals": [
         {
-          "type": "vaca",
-          "id": 1766645880704.8125,
-          "lastProduce": 1766646714458,
-          "hunger": 21
+          "hunger": 99,
+          "id": 1766689231500.1677,
+          "lastProduce": 1766695306706,
+          "rarity": "uncommon",
+          "type": "vaca"
         },
         {
-          "type": "vaca",
-          "id": 1766645881608.4624,
-          "lastProduce": 1766646714937,
-          "hunger": 30
+          "hunger": 98,
+          "id": 1766689232635.1157,
+          "lastProduce": 1766695311521,
+          "rarity": "uncommon",
+          "type": "vaca"
+        },
+        {
+          "hunger": 93,
+          "id": 1766689233268.061,
+          "lastProduce": 1766695311993,
+          "rarity": "common",
+          "type": "vaca"
+        },
+        {
+          "hunger": 51,
+          "id": 1766692193533.8477,
+          "lastProduce": 1766692193533,
+          "name": "Potro Comum",
+          "racesRun": 1,
+          "rarity": "common",
+          "stats": {
+            "exp": 120,
+            "speed": 10.1,
+            "stamina": 11
+          },
+          "type": "potro"
+        },
+        {
+          "hunger": 53,
+          "id": 1766692197996.7346,
+          "lastProduce": 1766692197996,
+          "name": "Potro Raro",
+          "racesRun": 1,
+          "rarity": "rare",
+          "stats": {
+            "exp": 130,
+            "speed": 15.1,
+            "stamina": 16
+          },
+          "type": "potro"
+        },
+        {
+          "hunger": 50,
+          "id": 1766694037556.147,
+          "lastProduce": 1766695312321,
+          "rarity": "common",
+          "type": "vaca"
+        },
+        {
+          "hunger": 55,
+          "id": 1766694037787.5674,
+          "lastProduce": 1766695312649,
+          "rarity": "rare",
+          "type": "vaca"
+        },
+        {
+          "hunger": 72,
+          "id": 1766694038147.3318,
+          "lastProduce": 1766695312992,
+          "rarity": "rare",
+          "type": "vaca"
+        },
+        {
+          "hunger": 68,
+          "id": 1766694038563.3599,
+          "lastProduce": 1766695313337,
+          "rarity": "rare",
+          "type": "vaca"
+        },
+        {
+          "hunger": 59,
+          "id": 1766694039619.5535,
+          "lastProduce": 1766695313689,
+          "rarity": "uncommon",
+          "type": "vaca"
+        },
+        {
+          "hunger": 70,
+          "id": 1766694040315.8828,
+          "lastProduce": 1766695313985,
+          "rarity": "uncommon",
+          "type": "vaca"
         }
       ],
+      "coins": 6837,
+      "id": "cqc3ch7au",
+      "nickname": "buda",
       "plots": [
         {
           "id": 0,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 1,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 2,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 3,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 4,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 5,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 6,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 7,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 8,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 9,
-          "state": "ready",
-          "cropId": "alface",
-          "plantTime": 1766647634867,
-          "readyTime": 1766647644867,
+          "state": "empty",
           "stolen": false
         },
         {
           "id": 10,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 11,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 12,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 13,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 14,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 15,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 16,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 17,
-          "state": "ready",
-          "cropId": "alface",
-          "plantTime": 1766647635251,
-          "readyTime": 1766647645251,
+          "state": "empty",
           "stolen": false
         },
         {
           "id": 18,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 19,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 20,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 21,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 22,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 23,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 24,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 25,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 26,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 27,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 28,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 29,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 30,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 31,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 32,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 33,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 34,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 35,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 36,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 37,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 38,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 39,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 40,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 41,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 42,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 43,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 44,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 45,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 46,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 47,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 48,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 49,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 50,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 51,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 52,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 53,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 54,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 55,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 56,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 57,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 58,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 59,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 60,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 61,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 62,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 63,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
+        }
+      ],
+      "workers": [
+        {
+          "exp": 5,
+          "id": "w_a94lxk8oi",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 9,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 9
+          }
+        },
+        {
+          "exp": 85,
+          "id": "w_0vrp5gxas",
+          "level": 2,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.1,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 110,
+          "id": "w_11l7i25ko",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 11,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.7,
+            "stamina": 11
+          }
+        },
+        {
+          "exp": 20,
+          "id": "w_14g555br6",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 9,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 9
+          }
+        },
+        {
+          "exp": 15,
+          "id": "w_isiuj1x6s",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 10,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.4,
+            "stamina": 10
+          }
+        },
+        {
+          "exp": 70,
+          "id": "w_agjsj3nsq",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 11,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.7,
+            "stamina": 11
+          }
+        },
+        {
+          "exp": 90,
+          "id": "w_16xkldp94",
+          "level": 2,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.1,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 50,
+          "id": "w_p6g32snpo",
+          "level": 3,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 10,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.4,
+            "stamina": 10
+          }
+        },
+        {
+          "exp": 25,
+          "id": "w_84eyr1xx0",
+          "level": 2,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.1,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_blo51zxlt",
+          "level": 2,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.1,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_d5jrrahjf",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.5,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_d1aw06mrz",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_weoj55xbf",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_j32olt38r",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_a8oe47hpp",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.5,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_05i7ot8q4",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_nchsbgbq1",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.5,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 20,
+          "id": "w_iaef6c4l7",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "epic",
+          "state": {
+            "cooldown": 0,
+            "energy": 10,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 2,
+            "stamina": 10
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_4298f5kch",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_5sgpjowcl",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_kyw932ovq",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_sy2iop30z",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_pknw5ouh2",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_b2s3sljtn",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_nb0s2qre2",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_jhwzrz2aq",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "epic",
+          "state": {
+            "cooldown": 0,
+            "energy": 10,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 2,
+            "stamina": 10
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_z50fgvn4f",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_4yavt6fq1",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_b79kqlhqi",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 20,
+          "id": "w_fvrl3pe67",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_47u8qysy2",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_qxn9r9lmf",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 35,
+          "id": "w_eentru7ww",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "legendary",
+          "state": {
+            "cooldown": 0,
+            "energy": 17,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 1,
+            "speed": 3.5,
+            "stamina": 17
+          }
+        },
+        {
+          "exp": 20,
+          "id": "w_kawbtnyp6",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_d8nwck5wr",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_6vpxzdh0h",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 15,
+          "id": "w_t36obpjto",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "rare",
+          "state": {
+            "cooldown": 0,
+            "energy": 7,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.5,
+            "stamina": 7
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_b83g2cn0c",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_dsvfh75sd",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_v12z8prte",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_9axyhjllu",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "epic",
+          "state": {
+            "cooldown": 0,
+            "energy": 10,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 2,
+            "stamina": 10
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_hsbl22j4l",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_nwsfxps2f",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_8ffp9a4sn",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 15,
+          "id": "w_73e40ubx8",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 10,
+          "id": "w_wioextecj",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_itjz875lj",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 0,
+          "id": "w_d7b3e2v55",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
+        },
+        {
+          "exp": 15,
+          "id": "w_srw9bn7ev",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "common",
+          "state": {
+            "cooldown": 0,
+            "energy": 5,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1,
+            "stamina": 5
+          }
+        },
+        {
+          "exp": 5,
+          "id": "w_v68jip4jy",
+          "level": 1,
+          "name": "Ajudante",
+          "rarity": "uncommon",
+          "state": {
+            "cooldown": 0,
+            "energy": 6,
+            "status": "idle"
+          },
+          "stats": {
+            "planting": 0,
+            "speed": 1.2,
+            "stamina": 6
+          }
         }
       ]
     },
-    "zf0xa7j5a": {
-      "id": "zf0xa7j5a",
-      "nickname": "budinha",
-      "coins": 132,
-      "workers": 0,
+    "qtk7h0it9": {
+      "coins": 148,
+      "id": "qtk7h0it9",
+      "nickname": "testinho",
+      "plots": [
+        {
+          "cropId": "morango",
+          "id": 0,
+          "plantTime": 1766694495371,
+          "readyTime": 1766694615371,
+          "state": "ready",
+          "stolen": false
+        },
+        {
+          "cropId": "morango",
+          "id": 1,
+          "plantTime": 1766694497227,
+          "readyTime": 1766694617227,
+          "state": "ready",
+          "stolen": false
+        },
+        {
+          "id": 2,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 3,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 4,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 5,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 6,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 7,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "cropId": "morango",
+          "id": 8,
+          "plantTime": 1766694496371,
+          "readyTime": 1766694616371,
+          "state": "ready",
+          "stolen": false
+        },
+        {
+          "id": 9,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 10,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 11,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 12,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 13,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 14,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 15,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 16,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 17,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 18,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 19,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 20,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 21,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 22,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 23,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 24,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 25,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 26,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 27,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 28,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 29,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 30,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 31,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 32,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 33,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 34,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 35,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 36,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 37,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 38,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 39,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 40,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 41,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 42,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 43,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 44,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 45,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 46,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 47,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 48,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 49,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 50,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 51,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 52,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 53,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 54,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 55,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 56,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 57,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 58,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 59,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 60,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 61,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 62,
+          "state": "empty",
+          "stolen": false
+        },
+        {
+          "id": 63,
+          "state": "empty",
+          "stolen": false
+        }
+      ],
       "animals": [],
+      "workers": []
+    },
+    "t19kab3jk": {
+      "coins": 100,
+      "id": "t19kab3jk",
+      "nickname": "Teste",
       "plots": [
         {
           "id": 0,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 1,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 2,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 3,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 4,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 5,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 6,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 7,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 8,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 9,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 10,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 11,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 12,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 13,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 14,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 15,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 16,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 17,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 18,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 19,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 20,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 21,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 22,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 23,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 24,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 25,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 26,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 27,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 28,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 29,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 30,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 31,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 32,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 33,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 34,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 35,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 36,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 37,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 38,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 39,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 40,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 41,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 42,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 43,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 44,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 45,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 46,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 47,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 48,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 49,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 50,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 51,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 52,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 53,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 54,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 55,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 56,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 57,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 58,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 59,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 60,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 61,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 62,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         },
         {
           "id": 63,
           "state": "empty",
-          "cropId": null,
-          "plantTime": null,
-          "readyTime": null,
           "stolen": false
         }
-      ]
+      ],
+      "animals": [],
+      "workers": []
     },
-    "7iuc8oagc": {
-      "id": "7iuc8oagc",
-      "nickname": "a",
+    "nwf7uy7og": {
+      "id": "nwf7uy7og",
+      "nickname": "teste",
       "coins": 100,
-      "workers": 0,
+      "prestige": 0,
+      "deedCount": 0,
+      "merchantSeals": 0,
+      "talents": {},
+      "workers": [],
       "animals": [],
       "plots": [
         {

@@ -54,22 +54,46 @@ const RARITY_TIERS = {
     'legendary': { name: 'Lendário', chance: 0.01, multiplier: 3.5, color: 'gold' }
 };
 
+const MYTHIC_HORSES = [
+    'Pégaso', 'Arião', 'Xanto', 'Bálio', 'Sleipnir', 
+    'Branco', 'Vermelho', 'Preto', 'Amarelo'
+];
+
+// Key beats Value (Jokenpo)
+const MYTHIC_ADVANTAGE = {
+    'Pégaso': 'Sleipnir',
+    'Sleipnir': 'Arião',
+    'Arião': 'Xanto',
+    'Xanto': 'Bálio',
+    'Bálio': 'Branco',
+    'Branco': 'Vermelho',
+    'Vermelho': 'Preto',
+    'Preto': 'Amarelo',
+    'Amarelo': 'Pégaso'
+};
+
+const TALENTS_CONFIG = {
+    'growth_speed': { name: 'Fertilizante Mágico', desc: 'Plantas crescem 1% mais rápido por nível.', baseCost: 1000, costMult: 1.5, maxLevel: 50 },
+    'sell_bonus': { name: 'Lábia de Comerciante', desc: 'Venda colheitas por 1% a mais por nível.', baseCost: 2000, costMult: 2.0, maxLevel: 20 },
+    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50 }
+};
+
 class GameState {
     constructor() {
         this.players = {}; // map id -> player
         this.gridSize = 64; // 8x8 grid per farm
         
         this.crops = {
-            'alface': { name: 'Alface', cost: 10, sell: 20, time: 10 },
-            'tomate': { name: 'Tomate', cost: 30, sell: 70, time: 30 },
-            'cenoura': { name: 'Cenoura', cost: 40, sell: 90, time: 45 }, 
-            'abobora': { name: 'Abóbora', cost: 50, sell: 150, time: 60 },
-            'milho': { name: 'Milho', cost: 80, sell: 200, time: 90 }, 
-            'morango': { name: 'Morango', cost: 120, sell: 350, time: 120 } 
+            'alface': { name: 'Alface', cost: 10, sell: 15, time: 10 },
+            'tomate': { name: 'Tomate', cost: 30, sell: 50, time: 30 },
+            'cenoura': { name: 'Cenoura', cost: 40, sell: 65, time: 45 }, 
+            'abobora': { name: 'Abóbora', cost: 50, sell: 100, time: 60 },
+            'milho': { name: 'Milho', cost: 80, sell: 140, time: 90 }, 
+            'morango': { name: 'Morango', cost: 120, sell: 240, time: 120 } 
         };
 
         this.animals = {
-            'vaca': { name: 'Vaca', cost: 500, produce: 50, interval: 30, type: 'produce' },
+            'vaca': { name: 'Vaca', cost: 500, produce: 25, interval: 30, type: 'produce' },
             'potro': { name: 'Potro', cost: 5000, type: 'race', stats: { speed: 10, stamina: 10, exp: 0 } }
         };
 
@@ -79,6 +103,182 @@ class GameState {
             timer: null,
             results: []
         };
+
+        this.quickRaceState = {
+            status: 'waiting',
+            entrants: [],
+            timer: null,
+            results: []
+        };
+
+        this.auctions = []; // Active auctions
+        // Check auctions every second
+        setInterval(() => this.checkAuctions(), 1000);
+    }
+
+    checkAuctions() {
+        const now = Date.now();
+        let changed = false;
+
+        this.auctions.forEach((auction, index) => {
+            if (auction.active && now >= auction.endTime) {
+                this.resolveAuction(auction);
+                auction.active = false;
+                changed = true;
+            }
+        });
+
+        // Cleanup inactive auctions
+        if (changed) {
+            this.auctions = this.auctions.filter(a => a.active);
+            this.saveGame();
+        }
+        return changed;
+    }
+
+    createAuction(playerId, itemType, itemIndex) {
+        const player = this.players[playerId];
+        if (!player) return { success: false, reason: "Player not found" };
+
+        let item = null;
+        let rarity = 'common';
+
+        // Remove item from player
+        if (itemType === 'worker') {
+            if (!player.workers || !player.workers[itemIndex]) return { success: false, reason: "Worker not found" };
+            item = player.workers[itemIndex];
+            rarity = item.rarity;
+            player.workers.splice(itemIndex, 1);
+        } else if (itemType === 'animal') {
+            if (!player.animals || !player.animals[itemIndex]) return { success: false, reason: "Animal not found" };
+            item = player.animals[itemIndex];
+            rarity = item.rarity;
+            player.animals.splice(itemIndex, 1);
+        } else {
+            return { success: false, reason: "Invalid item type" };
+        }
+
+        const basePrice = {
+            'common': 100, 'uncommon': 200, 'rare': 500, 'epic': 2000, 'legendary': 10000
+        }[rarity] || 100;
+
+        const auction = {
+            id: Date.now() + Math.random().toString(),
+            sellerId: playerId,
+            sellerName: player.nickname,
+            itemType,
+            item,
+            rarity,
+            price: basePrice,
+            bidderId: null,
+            bidderName: null,
+            endTime: Date.now() + (30 * 60 * 1000), // 30 minutes
+            active: true
+        };
+
+        this.auctions.push(auction);
+        this.saveGame();
+        return { success: true, auction };
+    }
+
+    placeBid(playerId, auctionId) {
+        const player = this.players[playerId];
+        const auction = this.auctions.find(a => a.id === auctionId);
+        
+        if (!player || !auction || !auction.active) return { success: false, reason: "Invalid auction" };
+        if (auction.sellerId === playerId) return { success: false, reason: "Cannot bid on own item" };
+        if (Date.now() > auction.endTime) return { success: false, reason: "Auction ended" };
+
+        const minBid = Math.floor(auction.price * 1.1); // Min 10% increase
+        if (player.coins < minBid) return { success: false, reason: `Need ${minBid} coins!` };
+
+        // Refund previous bidder
+        if (auction.bidderId) {
+            const prevBidder = this.players[auction.bidderId];
+            if (prevBidder) {
+                prevBidder.coins += auction.price; // Refund old price
+            }
+        }
+
+        // Take coins
+        player.coins -= minBid;
+        
+        // Update auction
+        auction.price = minBid;
+        auction.bidderId = playerId;
+        auction.bidderName = player.nickname;
+        
+        // Extend time by 2 mins if needed
+        const timeLeft = auction.endTime - Date.now();
+        if (timeLeft < 2 * 60 * 1000) {
+            auction.endTime += 2 * 60 * 1000;
+        }
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    resolveAuction(auction) {
+        const seller = this.players[auction.sellerId];
+        
+        if (auction.bidderId) {
+            // Sold!
+            const buyer = this.players[auction.bidderId];
+            
+            if (seller) {
+                seller.coins += auction.price;
+                seller.merchantSeals = (seller.merchantSeals || 0) + 1; // Reward Seal
+            }
+
+            if (buyer) {
+                if (auction.itemType === 'worker') {
+                    if (!buyer.workers) buyer.workers = [];
+                    buyer.workers.push(auction.item);
+                } else {
+                    if (!buyer.animals) buyer.animals = [];
+                    buyer.animals.push(auction.item);
+                }
+            }
+        } else {
+            // No bids, return to seller
+            if (seller) {
+                if (auction.itemType === 'worker') {
+                    if (!seller.workers) seller.workers = [];
+                    seller.workers.push(auction.item);
+                } else {
+                    if (!seller.animals) seller.animals = [];
+                    seller.animals.push(auction.item);
+                }
+            }
+        }
+    }
+
+    upgradeCowRarity(sourceId, targetId, cowIndex) {
+        const source = this.players[sourceId];
+        const target = this.players[targetId];
+        
+        if (!source || !target) return { success: false };
+        if (!target.animals || !target.animals[cowIndex]) return { success: false, reason: "Cow not found" };
+        
+        const cow = target.animals[cowIndex];
+        if (cow.type !== 'vaca') return { success: false, reason: "Only cows can be upgraded" };
+
+        const currentRarity = cow.rarity || 'common';
+        const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+        const currentTierIndex = tiers.indexOf(currentRarity);
+        
+        if (currentTierIndex === -1 || currentTierIndex >= tiers.length - 1) {
+            return { success: false, reason: "Max rarity reached!" };
+        }
+
+        const cost = Math.pow(3, currentTierIndex); // 1, 3, 9, 27
+        if ((source.merchantSeals || 0) < cost) return { success: false, reason: `Need ${cost} Seals!` };
+
+        source.merchantSeals -= cost;
+        cow.rarity = tiers[currentTierIndex + 1];
+
+        this.saveGame();
+        return { success: true, newRarity: cow.rarity };
     }
 
     async init() {
@@ -151,6 +351,7 @@ class GameState {
             level: 1,
             exp: 0,
             rarity: rarity,
+            birthTime: Date.now(), // For age tracking (optional for workers, mandatory for horses)
             stats: {
                 stamina: Math.floor(5 * multiplier),     // Actions before rest
                 speed: parseFloat((1 * multiplier).toFixed(1)),       // Speed multiplier (1 = normal)
@@ -219,6 +420,28 @@ class GameState {
         }
     }
 
+    buyTalent(playerId, talentId) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+
+        const config = TALENTS_CONFIG[talentId];
+        if (!config) return { success: false, reason: "Talento inválido" };
+
+        if (!player.talents) player.talents = {};
+        const currentLevel = player.talents[talentId] || 0;
+
+        if (currentLevel >= config.maxLevel) return { success: false, reason: "Nível máximo atingido!" };
+
+        const cost = Math.floor(config.baseCost * Math.pow(config.costMult, currentLevel));
+        if (player.coins < cost) return { success: false, reason: `Precisa de ${cost} moedas!` };
+
+        player.coins -= cost;
+        player.talents[talentId] = currentLevel + 1;
+
+        this.saveGame();
+        return { success: true, level: currentLevel + 1 };
+    }
+
     addPlayer(nickname) {
         // Check if player exists by nickname to avoid duplicates on restart
         const existing = Object.values(this.players).find(p => p.nickname === nickname);
@@ -231,12 +454,33 @@ class GameState {
             id,
             nickname,
             coins: 100, // Dinheiro inicial ajustado
+            prestige: 0, // Pontos de Prestígio
+            deedCount: 0, // Quantidade de Escrituras compradas
+            merchantSeals: 0, // Selos do Comerciante
+            talents: {}, // Talentos comprados { 'growth_speed': 1 }
             workers: [], // Array de funcionários
             animals: [], // Owned animals
             plots: this.createFarm() // Individual Farm
         };
         this.saveGame();
         return id;
+    }
+
+    buyDeed(playerId) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+
+        const currentDeeds = player.deedCount || 0;
+        const price = 1000000 * Math.pow(3, currentDeeds);
+
+        if (player.coins < price) return { success: false, reason: `Precisa de ${price} moedas!` };
+
+        player.coins -= price;
+        player.deedCount = currentDeeds + 1;
+        player.prestige = (player.prestige || 0) + 1; // 1 Escritura = 1 Ponto de Prestígio (por enquanto)
+
+        this.saveGame();
+        return { success: true };
     }
 
     hireWorker(playerId) {
@@ -261,14 +505,22 @@ class GameState {
 
         if (worker.level >= 10) return { success: false, reason: "Nível Máximo (10) atingido!" };
 
-        const cost = worker.level * 200; // Cost scales with level
-        if (player.coins < cost) return { success: false, reason: `Custa ${cost} moedas!` };
+        const cost = Math.floor(worker.level * 200); // Cost scales with level
+        
+        // Talent: Worker Cost Reduction
+        let discount = 0;
+        if (player.talents && player.talents['worker_cost']) {
+            discount = player.talents['worker_cost'] * 0.01; // 1% per level
+        }
+        const finalCost = Math.floor(cost * (1 - discount));
+
+        if (player.coins < finalCost) return { success: false, reason: `Custa ${finalCost} moedas!` };
 
         // EXP Check
         const expCost = worker.level * 50;
         if (worker.exp < expCost) return { success: false, reason: `Precisa de ${expCost} EXP!` };
 
-        player.coins -= cost;
+        player.coins -= finalCost;
         worker.exp -= expCost;
         worker.level++;
 
@@ -306,6 +558,7 @@ class GameState {
             type: type,
             id: Date.now() + Math.random(),
             lastProduce: Date.now(),
+            birthTime: Date.now(), // Age Tracking: 1 Day = 1 Year
             hunger: 0, // 0 = full, 100 = starving
             rarity: rarity
         };
@@ -316,6 +569,7 @@ class GameState {
                 stamina: Math.floor(animalInfo.stats.stamina * multiplier),
                 exp: 0
             }; 
+            newAnimal.energy = newAnimal.stats.stamina * 10; // New Energy Stat
             newAnimal.name = 'Potro ' + RARITY_TIERS[rarity].name;
         }
 
@@ -323,6 +577,82 @@ class GameState {
         
         this.saveGame();
         return { success: true };
+    }
+
+    breedHorses(playerId, index1, index2) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+
+        const h1 = player.animals[index1];
+        const h2 = player.animals[index2];
+
+        if (!h1 || !h2 || h1.type !== 'potro' || h2.type !== 'potro') {
+            return { success: false, reason: "Precisa de 2 cavalos!" };
+        }
+        if (index1 === index2) return { success: false, reason: "Não pode cruzar consigo mesmo!" };
+
+        // Check Age (3 Years = 3 Days = 3 * 24 * 60 * 60 * 1000 ms)
+        const ONE_YEAR_MS = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const age1 = (now - (h1.birthTime || now)) / ONE_YEAR_MS;
+        const age2 = (now - (h2.birthTime || now)) / ONE_YEAR_MS;
+
+        if (age1 < 3 || age2 < 3) return { success: false, reason: "Cavalos precisam ter 3 anos (3 dias)!" };
+
+        const breedCost = 2000;
+        if (player.coins < breedCost) return { success: false, reason: "Custo do cruzamento: 2000 moedas!" };
+
+        player.coins -= breedCost;
+
+        // Roll for Mythic (3% chance)
+        let childRarity = 'common';
+        let childName = 'Potro';
+        let isMythic = false;
+
+        if (Math.random() < 0.03) {
+            isMythic = true;
+            childRarity = 'legendary'; // Mythics count as Legendary for stats base
+            childName = MYTHIC_HORSES[Math.floor(Math.random() * MYTHIC_HORSES.length)];
+        } else {
+            // Inheritance Logic (Simple average of parents + variance)
+            childRarity = this.rollRarity(); // Random for now, or based on parents? Let's keep random for simplicity + rarity roll
+        }
+
+        const multiplier = RARITY_TIERS[childRarity].multiplier * (isMythic ? 2.0 : 1.0); // Mythics are stronger
+
+        const child = {
+            type: 'potro',
+            id: Date.now() + Math.random(),
+            lastProduce: Date.now(),
+            birthTime: Date.now(),
+            hunger: 0,
+            rarity: childRarity,
+            isMythic: isMythic,
+            stats: {
+                speed: parseFloat((10 * multiplier).toFixed(1)),
+                stamina: Math.floor(10 * multiplier),
+                exp: 0
+            },
+            energy: Math.floor(10 * multiplier) * 10,
+            name: childName
+        };
+
+        player.animals.push(child);
+        this.saveGame();
+        return { success: true, childName };
+    }
+
+    applyDowngradeChance(entity) {
+        // 0.01% chance (0.0001)
+        if (Math.random() < 0.0001) {
+            const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+            const currentIdx = tiers.indexOf(entity.rarity || 'common');
+            if (currentIdx > 0) {
+                entity.rarity = tiers[currentIdx - 1];
+                return true; // Downgraded
+            }
+        }
+        return false;
     }
 
     feedAnimal(playerId, animalIndex) {
@@ -338,6 +668,12 @@ class GameState {
         player.coins -= cost;
         animal.hunger = Math.max(0, animal.hunger - 50); // Restore 50 hunger
         
+        // Restore Energy
+        if (animal.type === 'potro') {
+            const maxEnergy = animal.stats.stamina * 10;
+            animal.energy = Math.min(maxEnergy, (animal.energy || 0) + 50);
+        }
+
         // EXP gain for horses
         if (animal.type === 'potro') {
             animal.stats.exp += 10;
@@ -388,6 +724,98 @@ class GameState {
         return { success: true };
     }
 
+    joinQuickRace(playerId, animalIndex) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const animal = player.animals[animalIndex];
+        if (!animal || animal.type !== 'potro') return { success: false, reason: "Apenas cavalos!" };
+        
+        // Init energy if missing
+        if (animal.energy === undefined) animal.energy = animal.stats.stamina * 10;
+
+        if (animal.hunger > 80) return { success: false, reason: "Cavalo faminto!" };
+        if (animal.energy < 20) return { success: false, reason: "Cavalo cansado!" };
+
+        if (this.quickRaceState.entrants.find(e => e.playerId === playerId)) {
+            return { success: false, reason: "Já inscrito na corrida rápida!" };
+        }
+
+        const entryFee = 20; // Cheaper
+        if (player.coins < entryFee) return { success: false, reason: "Taxa: 20 moedas!" };
+
+        player.coins -= entryFee;
+        
+        this.quickRaceState.entrants.push({
+            playerId,
+            animalIndex,
+            horseName: animal.name || 'Cavalo',
+            stats: animal.stats
+        });
+
+        if (this.quickRaceState.entrants.length === 1 && this.quickRaceState.status === 'waiting') {
+            this.quickRaceState.status = 'starting';
+            this.quickRaceState.timer = Date.now() + (2 * 60 * 1000); // 2 minutos
+            console.log("⚡ Timer Corrida Rápida: 2 minutos.");
+        }
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    runQuickRace() {
+        if (this.quickRaceState.entrants.length === 0) {
+            this.quickRaceState.status = 'waiting';
+            this.quickRaceState.timer = null;
+            return null;
+        }
+
+        const results = this.quickRaceState.entrants.map(entrant => {
+            const score = (entrant.stats.speed * 2.0) + (entrant.stats.stamina * 0.5) + (Math.random() * 20);
+            return { ...entrant, score };
+        });
+
+        results.sort((a, b) => b.score - a.score);
+
+        // Rewards: Winner gets coins, everyone gets EXP (but drains stats)
+        const totalEntryFees = results.length * 20;
+        const prizePool = totalEntryFees + 20;
+
+        const winner = results[0];
+        let winnerName = winner.horseName;
+
+        if (!winner.isNPC && this.players[winner.playerId]) {
+             const winnerPlayer = this.players[winner.playerId];
+             winnerPlayer.coins += prizePool;
+             winnerName = `${winnerPlayer.nickname} (${winner.horseName})`;
+        }
+
+        results.forEach(r => {
+            const p = this.players[r.playerId];
+            if (p && p.animals[r.animalIndex]) {
+                const animal = p.animals[r.animalIndex];
+                
+                // Init energy if missing
+                if (animal.energy === undefined) animal.energy = animal.stats.stamina * 10;
+
+                // EXP Gain (Less than main race)
+                animal.stats.exp += 30;
+
+                // Drain Stats
+                animal.hunger = Math.min(100, animal.hunger + 20);
+                animal.energy = Math.max(0, animal.energy - 30);
+            }
+        });
+
+        this.quickRaceState.results = results;
+        this.quickRaceState.status = 'finished';
+        this.quickRaceState.entrants = [];
+        this.quickRaceState.timer = Date.now() + 5000; // 5s display
+
+        this.saveGame();
+        return { results, winnerName, prizePool };
+    }
+
     runRace() {
         // Se não tiver ninguém, cancela/reseta
         if (this.raceState.entrants.length === 0) {
@@ -428,6 +856,11 @@ class GameState {
             if (p && p.animals[r.animalIndex]) {
                 const animal = p.animals[r.animalIndex];
                 
+                // Downgrade Chance
+                if (this.applyDowngradeChance(animal)) {
+                    console.log(`⚠️ ${animal.name} sofreu downgrade de raridade após a corrida!`);
+                }
+
                 // Inicializa contador de corridas se não existir
                 if (!animal.racesRun) animal.racesRun = 0;
 
@@ -465,6 +898,11 @@ class GameState {
         const now = Date.now();
         if (now - animal.lastProduce < info.interval * 1000) return { success: false, reason: "Ainda não produziu!" };
 
+        // Downgrade Chance
+        if (this.applyDowngradeChance(animal)) {
+            console.log(`⚠️ Vaca sofreu downgrade de raridade ao ser coletada!`);
+        }
+
         player.coins += info.produce;
         animal.lastProduce = now;
         this.saveGame();
@@ -488,12 +926,20 @@ class GameState {
             players: this.getPlayers(),
             crops: this.crops,
             animalsConfig: this.animals,
+            talentsConfig: TALENTS_CONFIG, // Send config to client
             raceState: {
                 status: this.raceState.status,
                 entrantsCount: this.raceState.entrants.length,
                 timer: this.raceState.timer ? Math.max(0, Math.ceil((this.raceState.timer - Date.now())/1000)) : 0,
                 lastResults: this.raceState.results
-            }
+            },
+            quickRaceState: {
+                status: this.quickRaceState.status,
+                entrantsCount: this.quickRaceState.entrants.length,
+                timer: this.quickRaceState.timer ? Math.max(0, Math.ceil((this.quickRaceState.timer - Date.now())/1000)) : 0,
+                lastResults: this.quickRaceState.results
+            },
+            auctions: this.auctions
         };
     }
 
@@ -515,7 +961,15 @@ class GameState {
         plot.state = 'planted';
         plot.cropId = cropId;
         plot.plantTime = Date.now();
-        plot.readyTime = Date.now() + (crop.time * 1000);
+        
+        // Talent: Growth Speed
+        let speedBonus = 0;
+        if (player.talents && player.talents['growth_speed']) {
+            speedBonus = player.talents['growth_speed'] * 0.01;
+        }
+        const growthTime = crop.time * (1 - speedBonus);
+
+        plot.readyTime = Date.now() + (growthTime * 1000);
         plot.stolen = false;
 
         this.saveGame();
@@ -534,15 +988,27 @@ class GameState {
         const crop = this.crops[plot.cropId];
         let value = crop.sell;
         
+        // Talent: Sell Bonus
+        if (player.talents && player.talents['sell_bonus']) {
+            value *= (1 + (player.talents['sell_bonus'] * 0.01));
+        }
+        value = Math.floor(value);
+
         if (plot.stolen) {
             value = Math.floor(value * 0.8); // 20% loss if stolen
         }
-
+        
         player.coins += value;
 
         // Worker EXP Logic
         if (workerId) {
             const worker = player.workers.find(w => w.id === workerId);
+            
+            // Downgrade Chance
+            if (worker && this.applyDowngradeChance(worker)) {
+                console.log(`⚠️ Trabalhador ${worker.name} sofreu downgrade de raridade!`);
+            }
+
             if (worker && worker.level < 200) {
                 worker.exp += 5; // Pouca EXP por colheita
                 
@@ -601,6 +1067,17 @@ class GameState {
         // Check for growth updates
         let changed = false;
         const now = Date.now();
+
+        // Quick Race Logic
+        if (this.quickRaceState.status === 'starting' && now >= this.quickRaceState.timer) {
+            const res = this.runQuickRace();
+            if (res) this.lastQuickRaceResult = res;
+            changed = true;
+        } else if (this.quickRaceState.status === 'finished' && now >= this.quickRaceState.timer) {
+            this.quickRaceState.status = 'waiting';
+            this.quickRaceState.results = [];
+            changed = true;
+        }
 
         // Race Logic
         if (this.raceState.status === 'starting' && now >= this.raceState.timer) {

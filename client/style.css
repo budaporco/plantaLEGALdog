@@ -327,6 +327,34 @@ button:hover { filter: brightness(1.1); }
     to { opacity: 0; transform: translateY(-10px); }
 }
 
+/* Animal List Layouts */
+.animal-section-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    cursor: pointer;
+    background: rgba(0,0,0,0.2);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.animal-list-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.animal-list-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 /* Polished Buttons */
 button {
     background: linear-gradient(to bottom, var(--primary-btn), #43a047);
@@ -367,6 +395,39 @@ button.secondary:active { box-shadow: 0 0 0 #424242; }
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: transform 0.2s;
+    margin-bottom: 10px;
+}
+
+/* Notification Bell */
+.notification-bell {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    background: rgba(0,0,0,0.8);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10001;
+    border: 2px solid gold;
+    box-shadow: 0 0 10px gold;
+}
+
+.notification-bell.active {
+    animation: bellShake 0.5s infinite;
+}
+
+@keyframes bellShake {
+    0% { transform: translateX(-50%) rotate(0); }
+    25% { transform: translateX(-50%) rotate(15deg); }
+    50% { transform: translateX(-50%) rotate(0); }
+    75% { transform: translateX(-50%) rotate(-15deg); }
+    100% { transform: translateX(-50%) rotate(0); }
 }
 
 .panel:hover {
