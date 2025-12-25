@@ -26,14 +26,15 @@ let db = null;
     if (serviceAccountPath) {
         try {
             const serviceAccount = require(serviceAccountPath);
-            // URL fixa para garantir conexão correta (Project ID: plantalegaldog)
-            const dbUrl = "https://plantalegaldog-default-rtdb.firebaseio.com";
+            // Tenta determinar a URL correta ou usa as duas comuns
+            const projectId = serviceAccount.project_id;
+            const targetUrl = "https://plantalegaldog-default-rtdb.firebaseio.com";
             
-            console.log(`🔌 Conectando ao Firebase em: ${dbUrl}`);
+            console.log(`🔌 Configurando Firebase em: ${targetUrl}`);
             
             firebaseAdmin.initializeApp({
                 credential: firebaseAdmin.credential.cert(serviceAccount),
-                databaseURL: dbUrl
+                databaseURL: targetUrl
             });
             db = firebaseAdmin.database();
             console.log(`🔥 Firebase Inicializado!`);
