@@ -311,8 +311,8 @@ setInterval(() => {
     }
 }, 1000);
 
-// Initialize game (load data) then start server
-game.init().then(() => {
+// Inicializa o jogo e garante que o servidor suba mesmo com erro
+game.init().finally(() => {
     server.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });

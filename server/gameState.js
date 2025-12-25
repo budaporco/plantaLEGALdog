@@ -23,20 +23,25 @@ for (const p of POSSIBLE_PATHS) {
 let db = null;
 
 // Initialize Firebase if credentials exist
-if (serviceAccountPath) {
-    try {
-        const serviceAccount = require(serviceAccountPath);
-        firebaseAdmin.initializeApp({
-            credential: firebaseAdmin.credential.cert(serviceAccount),
-            databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`
-        });
-        db = firebaseAdmin.database();
-        console.log(`🔥 Firebase Initialized! Using: ${serviceAccountPath}`);
-    } catch (e) {
-        console.error('❌ Failed to initialize Firebase:', e);
-        db = null;
-    }
-} else {
+    if (serviceAccountPath) {
+        try {
+            const serviceAccount = require(serviceAccountPath);
+            // URL fixa para garantir conexão correta (Project ID: plantalegaldog)
+            const dbUrl = "https://plantalegaldog-default-rtdb.firebaseio.com";
+            
+            console.log(`🔌 Conectando ao Firebase em: ${dbUrl}`);
+            
+            firebaseAdmin.initializeApp({
+                credential: firebaseAdmin.credential.cert(serviceAccount),
+                databaseURL: dbUrl
+            });
+            db = firebaseAdmin.database();
+            console.log(`🔥 Firebase Inicializado!`);
+        } catch (e) {
+            console.error('❌ Falha ao inicializar Firebase:', e);
+            db = null;
+        }
+    } else {
     console.log('⚠️ No serviceAccountKey.json found in expected paths. Using local JSON storage.');
 }
 
@@ -76,11 +81,20 @@ class GameState {
     }
 
     async init() {
-        // Try loading from Firebase first
+        // Tenta carregar do Firebase primeiro
         if (db) {
-            console.log('Attempting to load from Firebase...');
+            console.log('Lendo dados do Firebase...');
             try {
-                const snapshot = await db.ref('game_data').once('value');
+                // Timeout de 5 segundos para não travar o Render
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Tempo limite de conexão excedido (5s)')), 5000)
+                );
+
+                const snapshot = await Promise.race([
+                    db.ref('game_data').once('value'),
+                    timeoutPromise
+                ]);
+
                 const data = snapshot.val();
                 if (data && data.players) {
                     this.players = data.players;
