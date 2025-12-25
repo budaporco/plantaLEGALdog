@@ -73,8 +73,39 @@ class GameState {
             timer: null,
             results: []
         };
+    }
 
-        this.loadGame();
+    async init() {
+        // Try loading from Firebase first
+        if (db) {
+            console.log('Attempting to load from Firebase...');
+            try {
+                const snapshot = await db.ref('game_data').once('value');
+                const data = snapshot.val();
+                if (data && data.players) {
+                    this.players = data.players;
+                    
+                    // Validate and fix data structure
+                    Object.values(this.players).forEach(p => {
+                        if (!p.plots || p.plots.length !== this.gridSize) {
+                            p.plots = this.createFarm();
+                        }
+                        if (!p.animals) p.animals = [];
+                        if (!p.workers) p.workers = []; // Should be array now
+                    });
+
+                    console.log('✅ Game loaded from Firebase!');
+                    return;
+                } else {
+                    console.log('ℹ️ Firebase data empty or invalid. Checking local file...');
+                }
+            } catch (e) {
+                console.error('❌ Error loading from Firebase:', e);
+            }
+        }
+
+        // Fallback to local file
+        this.loadLocal();
     }
 
     rollRarity() {
@@ -127,7 +158,7 @@ class GameState {
         return plots;
     }
 
-    loadGame() {
+    loadLocal() {
         if (fs.existsSync(DATA_FILE)) {
             try {
                 const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
@@ -151,10 +182,19 @@ class GameState {
         const data = {
             players: this.players
         };
+        
+        // Save to local file (Backup)
         try {
             fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
         } catch (e) {
             console.error('Error saving game:', e);
+        }
+
+        // Save to Firebase (Primary Persistence)
+        if (db) {
+            db.ref('game_data').set(data).catch(e => {
+                console.error('Firebase save failed:', e.message);
+            });
         }
     }
 
