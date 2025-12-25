@@ -223,7 +223,7 @@ class GameState {
         this.players[id] = {
             id,
             nickname,
-            coins: 20000, // Starting money (Testing)
+            coins: 100, // Dinheiro inicial ajustado
             workers: 0, // Number of automated workers
             animals: [], // Owned animals
             plots: this.createFarm() // Individual Farm
@@ -370,10 +370,11 @@ class GameState {
             stats: animal.stats
         });
 
-        // Trigger Race Timer if enough players
-        if (this.raceState.entrants.length >= 2 && this.raceState.status === 'waiting') {
+        // Iniciar timer de 15 minutos (900s) apenas quando o PRIMEIRO jogador entrar
+        if (this.raceState.entrants.length === 1 && this.raceState.status === 'waiting') {
             this.raceState.status = 'starting';
-            this.raceState.timer = Date.now() + 10000; // 10 seconds to start
+            this.raceState.timer = Date.now() + (15 * 60 * 1000); // 15 minutos
+            console.log("🏁 Timer de corrida iniciado: 15 minutos.");
         }
 
         this.saveGame();
@@ -381,47 +382,62 @@ class GameState {
     }
 
     runRace() {
-        if (this.raceState.entrants.length < 2) {
-            this.raceState.status = 'waiting'; // Cancel if someone left?
+        // Se não tiver ninguém, cancela/reseta
+        if (this.raceState.entrants.length === 0) {
+            this.raceState.status = 'waiting';
+            this.raceState.timer = null;
             return null;
         }
 
         const results = this.raceState.entrants.map(entrant => {
-            // Calculate score: Speed * Stamina + Rarity Bonus + Random Luck
-            // Rarity Bonus: Legendary horses get a huge hidden boost
-            let rarityBonus = 0;
-            // entrant.stats has the raw stats, but we don't have rarity string here directly unless we stored it in entrant
-            // But stats are already scaled by rarity multiplier, so we rely on that mostly.
-            // Let's add a small random factor.
-            
-            const score = (entrant.stats.speed * 2.0) + (entrant.stats.stamina * 0.5) + (Math.random() * 15);
+            // Cálculo de Pontuação (Sorte + Atributos)
+            const score = (entrant.stats.speed * 2.0) + (entrant.stats.stamina * 0.5) + (Math.random() * 20);
             return { ...entrant, score };
         });
 
-        // Sort by score descending
+        // Ordenar por pontuação (Vencedor primeiro)
         results.sort((a, b) => b.score - a.score);
 
-        // Distribute Prizes
-        const prizePool = results.length * 100; // Entry fees back to pool
-        
-        // 1st: 60%, 2nd: 30%, 3rd: 10%
-        if (results[0]) this.players[results[0].playerId].coins += Math.floor(prizePool * 0.6);
-        if (results[1]) this.players[results[1].playerId].coins += Math.floor(prizePool * 0.3);
-        if (results[2]) this.players[results[2].playerId].coins += Math.floor(prizePool * 0.1);
+        // Distribuição de Prêmios
+        // Regra: 1º lugar leva tudo (soma das taxas) + 100 bônus da casa
+        const totalEntryFees = results.length * 100;
+        const prizePool = totalEntryFees + 100;
 
-        // Add EXP to racers
+        if (results[0]) {
+            const winnerId = results[0].playerId;
+            if (this.players[winnerId]) {
+                this.players[winnerId].coins += prizePool;
+            }
+        }
+
+        // Distribuição de EXP e Evolução
         results.forEach(r => {
             const p = this.players[r.playerId];
             if (p && p.animals[r.animalIndex]) {
-                p.animals[r.animalIndex].stats.exp += 50; // Race EXP
-                p.animals[r.animalIndex].hunger += 30; // Gets hungry
+                const animal = p.animals[r.animalIndex];
+                
+                // Inicializa contador de corridas se não existir
+                if (!animal.racesRun) animal.racesRun = 0;
+
+                // Só ganha EXP/Evolui se não atingiu o limite de 200 corridas
+                if (animal.racesRun < 200) {
+                    animal.racesRun += 1;
+                    animal.stats.exp += 100; // XP Fixo por corrida
+
+                    // Evolução de atributos a cada corrida (até o limite)
+                    // Exemplo: Ganha 0.1 de speed e 1 de stamina por corrida até o cap
+                    animal.stats.speed = parseFloat((animal.stats.speed + 0.1).toFixed(1));
+                    animal.stats.stamina += 1;
+                }
+
+                animal.hunger = Math.min(100, animal.hunger + 30); // Fome aumenta
             }
         });
 
         this.raceState.results = results;
         this.raceState.status = 'finished';
-        this.raceState.entrants = []; // Clear for next race
-        this.raceState.timer = Date.now() + 5000; // Show results for 5s
+        this.raceState.entrants = []; // Limpa inscritos
+        this.raceState.timer = Date.now() + 10000; // Mostra resultados por 10s
 
         this.saveGame();
         return results;

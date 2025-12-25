@@ -67,6 +67,21 @@ if(sidebar) {
     }
 
     // Worker Panel
+    // Race Status Panel
+    const racePanel = document.createElement('div');
+    racePanel.className = 'panel';
+    racePanel.style.border = '2px solid gold';
+    racePanel.innerHTML = `
+        <h3>🏁 Jockey Club</h3>
+        <p id="race-status">Status: Fechado</p>
+        <p>Inscritos: <span id="race-entrants">0</span></p>
+        <small id="race-timer" style="color:yellow; font-weight:bold;"></small>
+    `;
+    sidebar.insertBefore(racePanel, sidebar.children[1]); // Logo abaixo dos botões de navegação
+    elements.raceStatus = racePanel.querySelector('#race-status');
+    elements.raceEntrants = racePanel.querySelector('#race-entrants');
+    elements.raceTimer = racePanel.querySelector('#race-timer');
+
     const workerPanel = document.createElement('div');
     workerPanel.className = 'panel';
     workerPanel.innerHTML = `
@@ -201,6 +216,25 @@ function handleMessage(data) {
 
         case 'UPDATE_GAME':
             playersData = data.state.players;
+            
+            // Update Race UI
+            const rState = data.state.raceState;
+            if (elements.raceStatus) {
+                if (rState.status === 'waiting') {
+                    elements.raceStatus.textContent = "Status: Aguardando...";
+                    elements.raceTimer.textContent = "Precisa de 1 corredor";
+                } else if (rState.status === 'starting') {
+                    elements.raceStatus.textContent = "Status: 🟢 ABERTO";
+                    const minutes = Math.floor(rState.timer / 60);
+                    const seconds = rState.timer % 60;
+                    elements.raceTimer.textContent = `Largada em: ${minutes}:${seconds < 10 ? '0'+seconds : seconds}`;
+                } else {
+                    elements.raceStatus.textContent = "Status: Correndo!";
+                    elements.raceTimer.textContent = "";
+                }
+                elements.raceEntrants.textContent = rState.entrantsCount;
+            }
+
             // Update current view if it's open
             if (currentTargetId) {
                 switchView(currentTargetId);
@@ -393,6 +427,11 @@ function updateSelf(player) {
                 
                 const hungerPct = Math.max(0, 100 - animal.hunger);
                 
+                // Check if already in race (We need raceState from global or passed down, 
+                // but currently we only have player.animals. 
+                // Let's assume the server rejects duplicates, but visually we can't tell easily without full state.
+                // However, we can make the buttons bigger at least.)
+
                 div.innerHTML = `
                     <h4>🐎 ${animal.name || 'Potro'}</h4>
                     <div class="stat-row">
@@ -405,9 +444,9 @@ function updateSelf(player) {
                         <div class="progress-fill" style="width:${hungerPct}%; background:${hungerPct < 30 ? '#f44336' : '#8bc34a'};"></div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
-                        <button class="action-btn secondary" style="font-size:0.6rem; padding:4px;" data-action="feed">🍎 20g</button>
-                        <button class="action-btn" style="font-size:0.6rem; padding:4px;" data-action="race">🏁 100g</button>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+                        <button class="action-btn secondary" style="font-size:0.9rem; padding:8px;" data-action="feed">🍎 Alimentar</button>
+                        <button class="action-btn" style="font-size:0.9rem; padding:8px;" data-action="race">🏁 Correr</button>
                     </div>
                 `;
 
@@ -418,6 +457,10 @@ function updateSelf(player) {
                 div.querySelector('button[data-action="race"]').onclick = (e) => {
                     e.stopPropagation();
                     ws.send(JSON.stringify({ type: 'JOIN_RACE', animalIndex: index }));
+                    // Visual feedback (optimistic)
+                    e.target.textContent = "Inscrito ⏳";
+                    e.target.disabled = true;
+                    e.target.style.background = "#4caf50";
                 };
             } else {
                 // Cows / Simple Animals
