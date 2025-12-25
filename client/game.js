@@ -153,7 +153,7 @@ function connect(nickname) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
     // IF PRODUCTION: Replace this URL with your Render Backend URL later
-    const PROD_URL = 'wss://fazenda-web.onrender.com'; 
+    const PROD_URL = 'wss://plantalegaldog.onrender.com'; 
     
     let wsUrl;
     if (isLocal) {
