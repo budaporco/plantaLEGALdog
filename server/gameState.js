@@ -69,7 +69,7 @@ class GameState {
 
         this.animals = {
             'vaca': { name: 'Vaca', cost: 500, produce: 50, interval: 30, type: 'produce' },
-            'potro': { name: 'Potro', cost: 1000, type: 'race', stats: { speed: 10, stamina: 10, exp: 0 } }
+            'potro': { name: 'Potro', cost: 5000, type: 'race', stats: { speed: 10, stamina: 10, exp: 0 } }
         };
 
         this.raceState = {
@@ -224,7 +224,7 @@ class GameState {
             id,
             nickname,
             coins: 100, // Dinheiro inicial ajustado
-            workers: 0, // Number of automated workers
+            workers: [], // Array de funcionários
             animals: [], // Owned animals
             plots: this.createFarm() // Individual Farm
         };
@@ -515,7 +515,7 @@ class GameState {
         return { success: true };
     }
 
-    harvest(playerId, plotIndex) {
+    harvest(playerId, plotIndex, workerId = null) {
         const player = this.players[playerId];
         if (!player) return { success: false };
         
@@ -532,6 +532,26 @@ class GameState {
         }
 
         player.coins += value;
+
+        // Worker EXP Logic
+        if (workerId) {
+            const worker = player.workers.find(w => w.id === workerId);
+            if (worker && worker.level < 200) {
+                worker.exp += 5; // Pouca EXP por colheita
+                
+                // Level Up Check (Formula: Level * 50)
+                const reqExp = worker.level * 50;
+                if (worker.exp >= reqExp) {
+                    worker.exp -= reqExp;
+                    worker.level++;
+                    
+                    // Auto-upgrade stats
+                    worker.stats.stamina += 2;
+                    worker.stats.speed = parseFloat((worker.stats.speed + 0.1).toFixed(1));
+                    worker.state.energy = worker.stats.stamina; // Full heal on level up
+                }
+            }
+        }
 
         // Reset plot
         plot.state = 'empty';
@@ -612,11 +632,17 @@ class GameState {
             }
 
             // 2. Worker Logic (Auto-harvest own farm)
-            if (player.workers > 0 && Math.random() < 0.05) {
-                const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
-                if (readyPlotIndex !== -1) {
-                    this.harvest(player.id, readyPlotIndex);
-                    changed = true;
+            if (Array.isArray(player.workers) && player.workers.length > 0) {
+                // Find a worker that can work (simplified: just pick random for now)
+                // TODO: Implement energy system later
+                if (Math.random() < 0.05) {
+                    const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
+                    if (readyPlotIndex !== -1) {
+                        // Pick a random worker
+                        const worker = player.workers[Math.floor(Math.random() * player.workers.length)];
+                        this.harvest(player.id, readyPlotIndex, worker.id);
+                        changed = true;
+                    }
                 }
             }
         });

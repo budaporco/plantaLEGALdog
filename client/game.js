@@ -103,15 +103,22 @@ if(sidebar) {
     animalPanel.className = 'panel';
     animalPanel.innerHTML = `
         <h3>🐮 Curral</h3>
-        <button id="buy-cow-btn" style="width:100%; font-size:0.8rem">Comprar Vaca (500💰)</button>
+        <div style="display:grid; gap:5px; margin-bottom:10px;">
+            <button id="buy-cow-btn" style="width:100%; font-size:0.8rem">Comprar Vaca (500💰)</button>
+            <button id="buy-horse-btn" style="width:100%; font-size:0.8rem; background:#ff9800;">Comprar Potro (5000💰)</button>
+        </div>
         <div id="animal-pen" class="animal-pen"></div>
     `;
     sidebar.insertBefore(animalPanel, sidebar.children[3]);
     elements.animalPen = animalPanel.querySelector('#animal-pen');
     elements.buyCowBtn = animalPanel.querySelector('#buy-cow-btn');
+    elements.buyHorseBtn = animalPanel.querySelector('#buy-horse-btn');
 
     elements.buyCowBtn.onclick = () => {
         ws.send(JSON.stringify({ type: 'BUY_ANIMAL', animalType: 'vaca' }));
+    };
+    elements.buyHorseBtn.onclick = () => {
+        ws.send(JSON.stringify({ type: 'BUY_ANIMAL', animalType: 'potro' }));
     };
 }
 
@@ -374,15 +381,39 @@ function updateSelf(player) {
                 const statusIcon = w.state.status === 'resting' ? '💤' : (w.state.status === 'idle' ? '🛑' : '🔨');
                 const staminaPercent = (w.state.energy / w.stats.stamina) * 100;
                 
+                // Calculate EXP Percent (Level * 50 required)
+                const reqExp = w.level * 50;
+                const expPercent = Math.min(100, (w.exp / reqExp) * 100);
+
+                const avatars = {
+                    'common': '🧑‍🌾',
+                    'uncommon': '👷',
+                    'rare': '🚜',
+                    'epic': '🤖',
+                    'legendary': '👽'
+                };
+                const avatar = avatars[w.rarity || 'common'];
+
                 div.innerHTML = `
-                    <h4>${w.name} (Lvl ${w.level}) <span>${statusIcon}</span></h4>
-                    <div class="progress-bar">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
+                        <div style="font-size:2rem;">${avatar}</div>
+                        <div style="flex:1">
+                            <h4 style="margin:0">${w.name} (Lvl ${w.level}) <span>${statusIcon}</span></h4>
+                            <small>Raridade: <b style="text-transform:capitalize; color:var(--highlight)">${w.rarity || 'comum'}</b></small>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar" title="Energia">
                         <div class="progress-fill" style="width:${staminaPercent}%; background:${w.state.status === 'resting' ? '#ff9800' : '#4caf50'};"></div>
                     </div>
-                    <div class="stat-row">
-                        <span>EXP: ${w.exp}</span>
-                        <span>Raridade: <b style="text-transform:capitalize; color:var(--highlight)">${w.rarity || 'comum'}</b></span>
+                    
+                    <div style="margin-top:4px;">
+                        <small style="font-size:0.7rem">EXP: ${w.exp} / ${reqExp}</small>
+                        <div class="progress-bar" style="height:4px; background:#444;">
+                            <div class="progress-fill" style="width:${expPercent}%; background:#2196f3;"></div>
+                        </div>
                     </div>
+
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px; margin-top:8px;">
                         <button class="up-btn secondary" data-stat="stamina" style="font-size:0.7rem; padding:4px;" title="Stamina: ${w.stats.stamina} (Custa: ${w.level*200}💰)">⚡ ${w.stats.stamina}</button>
                         <button class="up-btn secondary" data-stat="speed" style="font-size:0.7rem; padding:4px;" title="Speed: ${w.stats.speed.toFixed(1)} (Custa: ${w.level*200}💰)">🏃 ${w.stats.speed.toFixed(1)}</button>
