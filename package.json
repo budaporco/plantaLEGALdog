@@ -1,0 +1,12 @@
+{
+  "name": "colheita-feliz-clone",
+  "version": "1.0.0",
+  "description": "Simple multiplayer farming game",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "ws": "^8.0.0"
+  }
+}
