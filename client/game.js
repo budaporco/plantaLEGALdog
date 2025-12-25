@@ -88,11 +88,13 @@ if(sidebar) {
         <h3>👷 Funcionários</h3>
         <p>Ajudantes: <span id="worker-count">0</span></p>
         <button id="hire-btn" style="width:100%; font-size:0.8rem">Contratar (500💰)</button>
+        <div id="worker-list" style="margin-top:10px;"></div>
         <small>Colhem automaticamente!</small>
     `;
     sidebar.insertBefore(workerPanel, sidebar.children[2]);
     elements.workerCount = workerPanel.querySelector('#worker-count');
     elements.hireBtn = workerPanel.querySelector('#hire-btn');
+    elements.workerList = workerPanel.querySelector('#worker-list');
 
     elements.hireBtn.onclick = () => {
         ws.send(JSON.stringify({ type: 'HIRE_WORKER' }));
