@@ -326,6 +326,11 @@ function updateSelf(player) {
 
     // Update Workers
     if(elements.workerList && player.workers) {
+        // Atualiza o contador de texto
+        if (elements.workerCount) {
+            elements.workerCount.textContent = Array.isArray(player.workers) ? player.workers.length : 0;
+        }
+
         elements.workerList.innerHTML = '';
         if (Array.isArray(player.workers)) {
             player.workers.forEach(w => {
