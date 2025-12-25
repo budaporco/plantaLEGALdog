@@ -631,19 +631,37 @@ class GameState {
                 });
             }
 
-            // 2. Worker Logic (Auto-harvest own farm)
-            if (Array.isArray(player.workers) && player.workers.length > 0) {
-                // Find a worker that can work (simplified: just pick random for now)
-                // TODO: Implement energy system later
-                if (Math.random() < 0.05) {
-                    const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
-                    if (readyPlotIndex !== -1) {
-                        // Pick a random worker
-                        const worker = player.workers[Math.floor(Math.random() * player.workers.length)];
-                        this.harvest(player.id, readyPlotIndex, worker.id);
-                        changed = true;
+            // 2. Worker Logic (Advanced)
+            if (Array.isArray(player.workers)) {
+                player.workers.forEach(worker => {
+                    // Recuperação de Energia (Resting)
+                    if (worker.state.energy < worker.stats.stamina) {
+                        // Recupera 1 de energia a cada tick (lento)
+                        // Se estiver zerado, recupera mais rápido? Não, linear.
+                        // Mas só trabalha se tiver energia > 0
+                        if (Math.random() < 0.1) { // 10% chance de recuperar 1 energia por segundo
+                            worker.state.energy++;
+                            changed = true;
+                        }
                     }
-                }
+
+                    // Trabalho (Harvest)
+                    if (worker.state.energy > 0) {
+                        // Chance baseada na SPEED. Base 1% * Speed.
+                        // Ex: Speed 1.0 = 1% chance/seg. Speed 5.0 = 5% chance/seg.
+                        const workChance = 0.01 * worker.stats.speed;
+                        
+                        if (Math.random() < workChance) {
+                            const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
+                            if (readyPlotIndex !== -1) {
+                                // Realiza o trabalho
+                                this.harvest(player.id, readyPlotIndex, worker.id);
+                                worker.state.energy--; // Gasta energia
+                                changed = true;
+                            }
+                        }
+                    }
+                });
             }
         });
         
