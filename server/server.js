@@ -306,8 +306,20 @@ function handleDisconnect(client) {
 // Game Loop
 setInterval(() => {
     const changes = game.tick();
+    
     if (changes) {
         broadcast({ type: 'UPDATE_GAME', state: game.getState() });
+        
+        // Check for race winner announcement
+        if (game.lastRaceResult) {
+            const { winnerName, prizePool } = game.lastRaceResult;
+            broadcast({ 
+                type: 'CHAT', 
+                from: '🏆 JOCKEY', 
+                text: `O vencedor foi ${winnerName}! Prêmio: ${prizePool} moedas!` 
+            });
+            game.lastRaceResult = null; // Clear
+        }
     }
 }, 1000);
 

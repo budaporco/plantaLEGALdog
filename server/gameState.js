@@ -403,11 +403,16 @@ class GameState {
         const totalEntryFees = results.length * 100;
         const prizePool = totalEntryFees + 100;
 
-        if (results[0]) {
-            const winnerId = results[0].playerId;
-            if (this.players[winnerId]) {
-                this.players[winnerId].coins += prizePool;
-            }
+        const winner = results[0];
+        let winnerName = winner.horseName;
+
+        // Distribute Prize to Winner (if not NPC)
+        if (!winner.isNPC && this.players[winner.playerId]) {
+             const winnerPlayer = this.players[winner.playerId];
+             winnerPlayer.coins += prizePool;
+             winnerName = `${winnerPlayer.nickname} (${winner.horseName})`;
+        } else if (winner.isNPC) {
+            console.log(`🤖 NPC ${winner.horseName} won the race.`);
         }
 
         // Distribuição de EXP e Evolução
@@ -440,7 +445,7 @@ class GameState {
         this.raceState.timer = Date.now() + 10000; // Mostra resultados por 10s
 
         this.saveGame();
-        return results;
+        return { results, winnerName, prizePool };
     }
 
     collectAnimal(playerId, animalIndex) {
@@ -572,7 +577,10 @@ class GameState {
 
         // Race Logic
         if (this.raceState.status === 'starting' && now >= this.raceState.timer) {
-            this.runRace();
+            const raceResult = this.runRace();
+            if (raceResult) {
+                this.lastRaceResult = raceResult; // Store for server to read
+            }
             changed = true;
         } else if (this.raceState.status === 'finished' && now >= this.raceState.timer) {
             this.raceState.status = 'waiting';
