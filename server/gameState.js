@@ -84,42 +84,48 @@ class GameState {
         // Tenta carregar do Firebase primeiro
         if (db) {
             console.log('Lendo dados do Firebase...');
-            try {
-                // Timeout de 5 segundos para não travar o Render
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Tempo limite de conexão excedido (5s)')), 5000)
-                );
+            let retries = 3;
+            while (retries > 0) {
+                try {
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Tempo limite de conexão excedido')), 10000)
+                    );
 
-                const snapshot = await Promise.race([
-                    db.ref('game_data').once('value'),
-                    timeoutPromise
-                ]);
+                    const snapshot = await Promise.race([
+                        db.ref('game_data').once('value'),
+                        timeoutPromise
+                    ]);
 
-                const data = snapshot.val();
-                if (data && data.players) {
-                    this.players = data.players;
-                    
-                    // Validate and fix data structure
-                    Object.values(this.players).forEach(p => {
-                        if (!p.plots || p.plots.length !== this.gridSize) {
-                            p.plots = this.createFarm();
-                        }
-                        if (!p.animals) p.animals = [];
-                        if (!p.workers) p.workers = []; // Should be array now
-                    });
+                    const data = snapshot.val();
+                    if (data && data.players) {
+                        this.players = data.players;
+                        
+                        // Validate and fix data structure
+                        Object.values(this.players).forEach(p => {
+                            if (!p.plots || p.plots.length !== this.gridSize) {
+                                p.plots = this.createFarm();
+                            }
+                            if (!p.animals) p.animals = [];
+                            if (!p.workers) p.workers = []; 
+                        });
 
-                    console.log('✅ Game loaded from Firebase!');
-                    return;
-                } else {
-                    console.log('ℹ️ Firebase data empty or invalid. Checking local file...');
+                        console.log('✅ Jogo carregado do Firebase com sucesso!');
+                        return;
+                    } else {
+                        console.log('ℹ️ Firebase vazio (Novo Jogo) ou inválido.');
+                        break; 
+                    }
+                } catch (e) {
+                    console.error(`❌ Erro ao carregar do Firebase (Tentativa ${4-retries}/3):`, e.message);
+                    retries--;
+                    if (retries === 0) console.error("⚠️ FALHA CRÍTICA: Não foi possível carregar do Firebase.");
+                    await new Promise(r => setTimeout(r, 2000));
                 }
-            } catch (e) {
-                console.error('❌ Error loading from Firebase:', e);
             }
         }
 
         // Fallback to local file
-        this.loadLocal();
+        if (!db) this.loadLocal();
     }
 
     rollRarity() {
