@@ -327,11 +327,21 @@ function renderGrid(plots) {
         // Visual State
         let content = '';
         if (plot.state === 'empty') {
-            div.style.backgroundColor = '#8B4513'; // Soil
+            div.style.backgroundColor = 'var(--soil-color)';
         } else if (plot.state === 'planted') {
             div.className += ' planted';
-            content = '🌱';
-            // Simple visual timer (optional)
+            content = '<div style="font-size:1.5rem">🌱</div>';
+            
+            // Progress Bar Logic
+            const totalTime = plot.readyTime - plot.plantTime;
+            const timeLeft = Math.max(0, plot.readyTime - Date.now());
+            const percent = Math.min(100, ((totalTime - timeLeft) / totalTime) * 100);
+            
+            content += `
+                <div style="position:absolute; bottom:5px; left:5px; right:5px; height:4px; background:rgba(0,0,0,0.5); border-radius:2px;">
+                    <div style="width:${percent}%; height:100%; background:#4caf50; border-radius:2px; transition:width 1s linear;"></div>
+                </div>
+            `;
         } else if (plot.state === 'ready') {
             div.className += ' ready';
             const crop = cropsData[plot.cropId];
