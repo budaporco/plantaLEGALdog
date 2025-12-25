@@ -1,7 +1,44 @@
 const fs = require('fs');
 const path = require('path');
+const firebaseAdmin = require('firebase-admin');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+// Check multiple locations for the service account key
+const POSSIBLE_PATHS = [
+    path.join(__dirname, 'serviceAccountKey.json'), // Local / Same folder
+    path.join(__dirname, '../serviceAccountKey.json'), // Parent folder
+    '/etc/secrets/serviceAccountKey.json', // Common Render secret path
+    'serviceAccountKey.json' // Root fallback
+];
+
+let serviceAccountPath = null;
+for (const p of POSSIBLE_PATHS) {
+    if (fs.existsSync(p)) {
+        serviceAccountPath = p;
+        break;
+    }
+}
+
+let db = null;
+
+// Initialize Firebase if credentials exist
+if (serviceAccountPath) {
+    try {
+        const serviceAccount = require(serviceAccountPath);
+        firebaseAdmin.initializeApp({
+            credential: firebaseAdmin.credential.cert(serviceAccount),
+            databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`
+        });
+        db = firebaseAdmin.database();
+        console.log(`🔥 Firebase Initialized! Using: ${serviceAccountPath}`);
+    } catch (e) {
+        console.error('❌ Failed to initialize Firebase:', e);
+        db = null;
+    }
+} else {
+    console.log('⚠️ No serviceAccountKey.json found in expected paths. Using local JSON storage.');
+}
 
 const RARITY_TIERS = {
     'common': { name: 'Comum', chance: 0.50, multiplier: 1.0, color: 'gray' },
