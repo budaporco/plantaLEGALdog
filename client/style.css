@@ -1,0 +1,471 @@
+:root {
+    --bg-color: #70c5ce;
+    --panel-bg: rgba(255, 255, 255, 0.95);
+    --grass-color: #8cc569;
+    --soil-color: #795548;
+    --highlight: #ffeb3b;
+    --primary-btn: #4caf50;
+    --danger-btn: #f44336;
+}
+
+body {
+    margin: 0;
+    font-family: 'Fredoka One', 'Segoe UI', cursive, sans-serif; /* Friendly font */
+    background-color: var(--bg-color);
+    background-image: linear-gradient(to bottom, #70c5ce, #ffffff);
+    overflow: hidden;
+    color: #333;
+}
+
+/* Utils */
+.hidden { display: none !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* Modal */
+.modal {
+    display: flex;
+    position: fixed;
+    z-index: 10000; /* Ensure high z-index */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-modal:hover { color: #000; }
+
+.guide-section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.guide-section h3 { margin-top: 0; color: #4caf50; }
+.guide-section p { margin: 5px 0; color: #555; }
+
+/* Login */
+#login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* CSS Generated Farm Landscape (No external images = No errors) */
+    background-color: #87CEEB; /* Sky Blue */
+    background-image: 
+        radial-gradient(circle at 85% 15%, #ffd700 0%, #ffd700 40px, rgba(255, 215, 0, 0.5) 60px, transparent 100px), /* Sun */
+        radial-gradient(ellipse at 50% 100%, #8bc34a 0%, #8bc34a 50%, transparent 51%), /* Hill Center */
+        radial-gradient(ellipse at 20% 100%, #7cb342 0%, #7cb342 60%, transparent 61%), /* Hill Left */
+        radial-gradient(ellipse at 80% 100%, #689f38 0%, #689f38 60%, transparent 61%), /* Hill Right */
+        linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, transparent 100%); /* Atmosphere */
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.login-box h1 { margin-top: 0; color: #4caf50; text-shadow: 1px 1px 0px #333; }
+
+input, button {
+    padding: 12px;
+    margin: 8px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+input:focus { border-color: #4caf50; }
+
+button {
+    background-color: var(--primary-btn);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #388e3c;
+}
+
+button:active { transform: translateY(4px); box-shadow: none; }
+button:hover { filter: brightness(1.1); }
+
+/* Game Layout */
+#game-screen {
+    display: flex;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.sidebar {
+    width: 300px;
+    background: #fdfdfd;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-right: 4px solid #dcdcdc;
+    overflow-y: auto;
+}
+
+.panel {
+    background: var(--panel-bg);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.panel h3 { margin-top: 0; color: #555; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+
+.main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--grass-color);
+    background-image: 
+        radial-gradient(#81b85f 15%, transparent 16%),
+        radial-gradient(#81b85f 15%, transparent 16%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    overflow: auto;
+    position: relative;
+}
+
+/* Farm Grid */
+#farm-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 70px); /* Bigger plots */
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9); /* More opaque background */
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border: 4px solid #fff; 
+}
+
+.plot {
+    width: 70px;
+    height: 70px;
+    background-color: var(--soil-color);
+    border: 4px solid #5d4037;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    transition: transform 0.1s, filter 0.2s;
+    user-select: none;
+}
+
+.plot:hover {
+    transform: scale(1.05);
+    border-color: var(--highlight);
+    z-index: 10;
+}
+
+.plot.planted { background-color: #5d4037; }
+.plot.ready { 
+    background-color: #ffd700; 
+    border-color: #fff; 
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.plot-owner {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    font-size: 10px;
+    color: white;
+    background: #333;
+    padding: 2px 5px;
+    border-radius: 10px;
+    pointer-events: none;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+.stolen-mark {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    font-size: 16px;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 3;
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    background: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid #333;
+    pointer-events: auto;
+    min-width: 250px;
+    font-size: 0.9rem;
+}
+
+.toast.success { border-left-color: #4caf50; }
+.toast.error { border-left-color: #f44336; }
+.toast.info { border-left-color: #2196f3; }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Polished Buttons */
+button {
+    background: linear-gradient(to bottom, var(--primary-btn), #43a047);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #2e7d32;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.1s;
+    position: relative;
+    overflow: hidden;
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #2e7d32;
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+button.secondary {
+    background: linear-gradient(to bottom, #757575, #616161);
+    box-shadow: 0 4px 0 #424242;
+}
+button.secondary:active { box-shadow: 0 0 0 #424242; }
+
+/* Panels & Cards */
+.panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s;
+}
+
+.panel:hover {
+    transform: translateY(-2px);
+}
+
+.panel h3 {
+    font-size: 1.1rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+    padding-bottom: 8px;
+}
+
+/* Rarity Tiers */
+.rarity-common { border: 2px solid #9e9e9e !important; }
+.rarity-uncommon { border: 2px solid #4caf50 !important; box-shadow: 0 0 5px #4caf50; }
+.rarity-rare { border: 2px solid #2196f3 !important; box-shadow: 0 0 8px #2196f3; }
+.rarity-epic { border: 2px solid #9c27b0 !important; box-shadow: 0 0 10px #9c27b0; }
+.rarity-legendary { 
+    border: 3px solid #ffd700 !important; 
+    box-shadow: 0 0 15px #ffd700;
+    animation: shine 2s infinite linear;
+    background: linear-gradient(135deg, #fff 0%, #fff9c4 100%);
+}
+
+@keyframes shine {
+    0% { box-shadow: 0 0 10px #ffd700; border-color: #ffd700; }
+    50% { box-shadow: 0 0 25px #ffeb3b; border-color: #ffeb3b; }
+    100% { box-shadow: 0 0 10px #ffd700; border-color: #ffd700; }
+}
+
+/* Shop Grid Polish */
+.shop-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+.shop-item {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.shop-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.shop-item.selected {
+    border-color: var(--highlight);
+    background: #fff9c4;
+    transform: scale(1.05);
+}
+
+/* Worker & Animal Cards */
+.worker-card, .animal-card {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+.worker-card h4, .animal-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 4px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 5px 0;
+}
+.progress-fill { height: 100%; transition: width 0.3s; }
+
+/* Floating Action Button (if needed) */
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary-btn);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 100;
+}
+
+
+/* Chat */
+#chat-box {
+    height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    padding: 8px;
+    font-size: 13px;
+    background: #fff;
+    border-radius: 8px;
+}
+#chat-input { width: calc(100% - 20px); }
+
+/* HUD */
+.hud {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: flex;
+    gap: 20px;
+    backdrop-filter: blur(2px);
+}
+.hud div { font-weight: bold; font-size: 1.2rem; }

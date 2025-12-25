@@ -1,0 +1,517 @@
+const fs = require('fs');
+const path = require('path');
+
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+const RARITY_TIERS = {
+    'common': { name: 'Comum', chance: 0.50, multiplier: 1.0, color: 'gray' },
+    'uncommon': { name: 'Incomum', chance: 0.30, multiplier: 1.2, color: 'green' },
+    'rare': { name: 'Raro', chance: 0.15, multiplier: 1.5, color: 'blue' },
+    'epic': { name: 'Épico', chance: 0.04, multiplier: 2.0, color: 'purple' },
+    'legendary': { name: 'Lendário', chance: 0.01, multiplier: 3.5, color: 'gold' }
+};
+
+class GameState {
+    constructor() {
+        this.players = {}; // map id -> player
+        this.gridSize = 64; // 8x8 grid per farm
+        
+        this.crops = {
+            'alface': { name: 'Alface', cost: 10, sell: 20, time: 10 },
+            'tomate': { name: 'Tomate', cost: 30, sell: 70, time: 30 },
+            'cenoura': { name: 'Cenoura', cost: 40, sell: 90, time: 45 }, 
+            'abobora': { name: 'Abóbora', cost: 50, sell: 150, time: 60 },
+            'milho': { name: 'Milho', cost: 80, sell: 200, time: 90 }, 
+            'morango': { name: 'Morango', cost: 120, sell: 350, time: 120 } 
+        };
+
+        this.animals = {
+            'vaca': { name: 'Vaca', cost: 500, produce: 50, interval: 30, type: 'produce' },
+            'potro': { name: 'Potro', cost: 1000, type: 'race', stats: { speed: 10, stamina: 10, exp: 0 } }
+        };
+
+        this.raceState = {
+            status: 'waiting', // waiting, running, finished
+            entrants: [], // [{playerId, animalIndex, horseName}]
+            timer: null,
+            results: []
+        };
+
+        this.loadGame();
+    }
+
+    rollRarity() {
+        const rand = Math.random();
+        let cumulative = 0;
+        for (const [key, tier] of Object.entries(RARITY_TIERS)) {
+            cumulative += tier.chance;
+            if (rand < cumulative) {
+                return key;
+            }
+        }
+        return 'common'; // Fallback
+    }
+
+    createWorker() {
+        const rarity = this.rollRarity();
+        const multiplier = RARITY_TIERS[rarity].multiplier;
+        
+        return {
+            id: 'w_' + Math.random().toString(36).substr(2, 9),
+            name: 'Ajudante',
+            level: 1,
+            exp: 0,
+            rarity: rarity,
+            stats: {
+                stamina: Math.floor(5 * multiplier),     // Actions before rest
+                speed: parseFloat((1 * multiplier).toFixed(1)),       // Speed multiplier (1 = normal)
+                planting: rarity === 'legendary' ? 1 : 0     // Only legendary starts with planting skill
+            },
+            state: {
+                energy: Math.floor(5 * multiplier),
+                cooldown: 0,
+                status: 'idle'  // idle, working, resting
+            }
+        };
+    }
+
+    createFarm() {
+        const plots = [];
+        for (let i = 0; i < this.gridSize; i++) {
+            plots.push({
+                id: i,
+                state: 'empty', // empty, planted, ready, withered
+                cropId: null,
+                plantTime: null,
+                readyTime: null,
+                stolen: false
+            });
+        }
+        return plots;
+    }
+
+    loadGame() {
+        if (fs.existsSync(DATA_FILE)) {
+            try {
+                const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+                this.players = data.players || {};
+                
+                // Ensure every player has a farm
+                Object.values(this.players).forEach(p => {
+                    if (!p.plots || p.plots.length !== this.gridSize) {
+                        p.plots = this.createFarm();
+                    }
+                });
+
+                console.log('Game loaded from file.');
+            } catch (e) {
+                console.error('Error loading game:', e);
+            }
+        }
+    }
+
+    saveGame() {
+        const data = {
+            players: this.players
+        };
+        try {
+            fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        } catch (e) {
+            console.error('Error saving game:', e);
+        }
+    }
+
+    addPlayer(nickname) {
+        // Check if player exists by nickname to avoid duplicates on restart
+        const existing = Object.values(this.players).find(p => p.nickname === nickname);
+        if (existing) {
+            return existing.id;
+        }
+
+        const id = Math.random().toString(36).substr(2, 9);
+        this.players[id] = {
+            id,
+            nickname,
+            coins: 20000, // Starting money (Testing)
+            workers: 0, // Number of automated workers
+            animals: [], // Owned animals
+            plots: this.createFarm() // Individual Farm
+        };
+        this.saveGame();
+        return id;
+    }
+
+    hireWorker(playerId) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        if (player.coins < 500) return { success: false, reason: "Custa 500 moedas!" };
+
+        player.coins -= 500;
+        if (!Array.isArray(player.workers)) player.workers = [];
+        player.workers.push(this.createWorker());
+        
+        this.saveGame();
+        return { success: true };
+    }
+
+    upgradeWorker(playerId, workerId, statType) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const worker = player.workers.find(w => w.id === workerId);
+        if (!worker) return { success: false, reason: "Funcionário não encontrado" };
+
+        if (worker.level >= 10) return { success: false, reason: "Nível Máximo (10) atingido!" };
+
+        const cost = worker.level * 200; // Cost scales with level
+        if (player.coins < cost) return { success: false, reason: `Custa ${cost} moedas!` };
+
+        // EXP Check
+        const expCost = worker.level * 50;
+        if (worker.exp < expCost) return { success: false, reason: `Precisa de ${expCost} EXP!` };
+
+        player.coins -= cost;
+        worker.exp -= expCost;
+        worker.level++;
+
+        // Stat increase based on Rarity Multiplier
+        const multiplier = RARITY_TIERS[worker.rarity || 'common'].multiplier;
+
+        if (statType === 'stamina') {
+            worker.stats.stamina += Math.ceil(2 * multiplier);
+            worker.state.energy = worker.stats.stamina; // Refill on upgrade
+        } else if (statType === 'speed') {
+            worker.stats.speed += parseFloat((0.2 * multiplier).toFixed(1));
+        } else if (statType === 'planting') {
+            worker.stats.planting += 1;
+        }
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    buyAnimal(playerId, type) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const animalInfo = this.animals[type];
+        if (!animalInfo) return { success: false };
+        if (player.coins < animalInfo.cost) return { success: false, reason: "Moedas insuficientes!" };
+
+        player.coins -= animalInfo.cost;
+        if (!player.animals) player.animals = [];
+        
+        const rarity = this.rollRarity();
+        const multiplier = RARITY_TIERS[rarity].multiplier;
+
+        const newAnimal = {
+            type: type,
+            id: Date.now() + Math.random(),
+            lastProduce: Date.now(),
+            hunger: 0, // 0 = full, 100 = starving
+            rarity: rarity
+        };
+
+        if (type === 'potro') {
+            newAnimal.stats = { 
+                speed: parseFloat((animalInfo.stats.speed * multiplier).toFixed(1)),
+                stamina: Math.floor(animalInfo.stats.stamina * multiplier),
+                exp: 0
+            }; 
+            newAnimal.name = 'Potro ' + RARITY_TIERS[rarity].name;
+        }
+
+        player.animals.push(newAnimal);
+        
+        this.saveGame();
+        return { success: true };
+    }
+
+    feedAnimal(playerId, animalIndex) {
+        const player = this.players[playerId];
+        if (!player || !player.animals[animalIndex]) return { success: false };
+
+        const animal = player.animals[animalIndex];
+        const cost = 20; // Feed cost
+        
+        if (player.coins < cost) return { success: false, reason: "Sem dinheiro para ração!" };
+        if (animal.hunger === 0) return { success: false, reason: "Não está com fome!" };
+
+        player.coins -= cost;
+        animal.hunger = Math.max(0, animal.hunger - 50); // Restore 50 hunger
+        
+        // EXP gain for horses
+        if (animal.type === 'potro') {
+            animal.stats.exp += 10;
+            // Level up stats slightly based on EXP?
+            if (animal.stats.exp % 100 === 0) {
+                animal.stats.speed += 1;
+                animal.stats.stamina += 1;
+            }
+        }
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    joinRace(playerId, animalIndex) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const animal = player.animals[animalIndex];
+        if (!animal || animal.type !== 'potro') return { success: false, reason: "Apenas cavalos podem correr!" };
+        if (animal.hunger > 50) return { success: false, reason: "O cavalo está com fome!" };
+
+        // Check if already in race
+        if (this.raceState.entrants.find(e => e.playerId === playerId)) {
+            return { success: false, reason: "Já está inscrito!" };
+        }
+
+        const entryFee = 100;
+        if (player.coins < entryFee) return { success: false, reason: "Taxa de entrada: 100 moedas!" };
+
+        player.coins -= entryFee;
+        
+        this.raceState.entrants.push({
+            playerId,
+            animalIndex,
+            horseName: animal.name || 'Cavalo',
+            stats: animal.stats
+        });
+
+        // Trigger Race Timer if enough players
+        if (this.raceState.entrants.length >= 2 && this.raceState.status === 'waiting') {
+            this.raceState.status = 'starting';
+            this.raceState.timer = Date.now() + 10000; // 10 seconds to start
+        }
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    runRace() {
+        if (this.raceState.entrants.length < 2) {
+            this.raceState.status = 'waiting'; // Cancel if someone left?
+            return null;
+        }
+
+        const results = this.raceState.entrants.map(entrant => {
+            // Calculate score: Speed * Stamina + Rarity Bonus + Random Luck
+            // Rarity Bonus: Legendary horses get a huge hidden boost
+            let rarityBonus = 0;
+            // entrant.stats has the raw stats, but we don't have rarity string here directly unless we stored it in entrant
+            // But stats are already scaled by rarity multiplier, so we rely on that mostly.
+            // Let's add a small random factor.
+            
+            const score = (entrant.stats.speed * 2.0) + (entrant.stats.stamina * 0.5) + (Math.random() * 15);
+            return { ...entrant, score };
+        });
+
+        // Sort by score descending
+        results.sort((a, b) => b.score - a.score);
+
+        // Distribute Prizes
+        const prizePool = results.length * 100; // Entry fees back to pool
+        
+        // 1st: 60%, 2nd: 30%, 3rd: 10%
+        if (results[0]) this.players[results[0].playerId].coins += Math.floor(prizePool * 0.6);
+        if (results[1]) this.players[results[1].playerId].coins += Math.floor(prizePool * 0.3);
+        if (results[2]) this.players[results[2].playerId].coins += Math.floor(prizePool * 0.1);
+
+        // Add EXP to racers
+        results.forEach(r => {
+            const p = this.players[r.playerId];
+            if (p && p.animals[r.animalIndex]) {
+                p.animals[r.animalIndex].stats.exp += 50; // Race EXP
+                p.animals[r.animalIndex].hunger += 30; // Gets hungry
+            }
+        });
+
+        this.raceState.results = results;
+        this.raceState.status = 'finished';
+        this.raceState.entrants = []; // Clear for next race
+        this.raceState.timer = Date.now() + 5000; // Show results for 5s
+
+        this.saveGame();
+        return results;
+    }
+
+    collectAnimal(playerId, animalIndex) {
+        const player = this.players[playerId];
+        if (!player || !player.animals[animalIndex]) return { success: false };
+        
+        const animal = player.animals[animalIndex];
+        const info = this.animals[animal.type];
+        
+        const now = Date.now();
+        if (now - animal.lastProduce < info.interval * 1000) return { success: false, reason: "Ainda não produziu!" };
+
+        player.coins += info.produce;
+        animal.lastProduce = now;
+        this.saveGame();
+        return { success: true };
+    }
+
+    removePlayer(id) {
+        delete this.players[id];
+    }
+
+    getPlayer(id) {
+        return this.players[id];
+    }
+
+    getPlayers() {
+        return Object.values(this.players);
+    }
+
+    getState() {
+        return {
+            players: this.getPlayers(),
+            crops: this.crops,
+            animalsConfig: this.animals,
+            raceState: {
+                status: this.raceState.status,
+                entrantsCount: this.raceState.entrants.length,
+                timer: this.raceState.timer ? Math.max(0, Math.ceil((this.raceState.timer - Date.now())/1000)) : 0,
+                lastResults: this.raceState.results
+            }
+        };
+    }
+
+    plant(playerId, plotIndex, cropId) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const plot = player.plots[plotIndex];
+        const crop = this.crops[cropId];
+
+        if (!plot || !crop) return { success: false };
+        if (plot.state !== 'empty') return { success: false };
+        if (player.coins < crop.cost) return { success: false };
+
+        // Deduct coins
+        player.coins -= crop.cost;
+
+        // Update plot
+        plot.state = 'planted';
+        plot.cropId = cropId;
+        plot.plantTime = Date.now();
+        plot.readyTime = Date.now() + (crop.time * 1000);
+        plot.stolen = false;
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    harvest(playerId, plotIndex) {
+        const player = this.players[playerId];
+        if (!player) return { success: false };
+        
+        const plot = player.plots[plotIndex];
+        if (!plot) return { success: false };
+        
+        if (plot.state !== 'ready') return { success: false };
+
+        const crop = this.crops[plot.cropId];
+        let value = crop.sell;
+        
+        if (plot.stolen) {
+            value = Math.floor(value * 0.8); // 20% loss if stolen
+        }
+
+        player.coins += value;
+
+        // Reset plot
+        plot.state = 'empty';
+        plot.cropId = null;
+        plot.plantTime = null;
+        plot.readyTime = null;
+        plot.stolen = false;
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    steal(thiefId, targetId, plotIndex) {
+        const thief = this.players[thiefId];
+        const target = this.players[targetId];
+
+        if (!thief || !target) return { success: false };
+        if (thiefId === targetId) return { success: false, reason: "Não pode roubar a si mesmo!" };
+        
+        const plot = target.plots[plotIndex];
+        if (!plot) return { success: false };
+        
+        // Can only steal if ready
+        if (plot.state !== 'ready') return { success: false, reason: "Ainda não está pronto!" };
+        
+        // Can't steal if already stolen
+        if (plot.stolen) return { success: false, reason: "Já foi roubado!" };
+
+        const crop = this.crops[plot.cropId];
+        const stealAmount = Math.floor(crop.sell * 0.2); // Steal 20%
+
+        thief.coins += stealAmount;
+        plot.stolen = true;
+
+        this.saveGame();
+        return { success: true };
+    }
+
+    tick() {
+        // Check for growth updates
+        let changed = false;
+        const now = Date.now();
+
+        // Race Logic
+        if (this.raceState.status === 'starting' && now >= this.raceState.timer) {
+            this.runRace();
+            changed = true;
+        } else if (this.raceState.status === 'finished' && now >= this.raceState.timer) {
+            this.raceState.status = 'waiting';
+            this.raceState.results = [];
+            changed = true;
+        }
+
+        Object.values(this.players).forEach(player => {
+            // 1. Plots Growth
+            player.plots.forEach(plot => {
+                if (plot.state === 'planted' && now >= plot.readyTime) {
+                    plot.state = 'ready';
+                    changed = true;
+                }
+            });
+
+            // Animal Hunger Logic
+            if (player.animals) {
+                player.animals.forEach(animal => {
+                    // Hunger increases over time
+                    if (Math.random() < 0.01) { // Slow hunger
+                        if (!animal.hunger) animal.hunger = 0;
+                        if (animal.hunger < 100) {
+                            animal.hunger += 1;
+                            changed = true;
+                        }
+                    }
+                });
+            }
+
+            // 2. Worker Logic (Auto-harvest own farm)
+            if (player.workers > 0 && Math.random() < 0.05) {
+                const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
+                if (readyPlotIndex !== -1) {
+                    this.harvest(player.id, readyPlotIndex);
+                    changed = true;
+                }
+            }
+        });
+        
+        if (changed) {
+            this.saveGame();
+        }
+
+        return changed;
+    }
+}
+
+module.exports = { GameState };
