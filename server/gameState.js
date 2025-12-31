@@ -184,6 +184,64 @@ class GameState {
         return { success: true, auction };
     }
 
+    massAuction(playerId, itemType, rarity) {
+        const player = this.players[playerId];
+        if (!player) return { success: false, reason: "Player not found" };
+
+        let itemsToSell = [];
+        let indicesToRemove = [];
+
+        // Identify items matching rarity
+        if (itemType === 'worker') {
+            if (!player.workers) return { success: false, reason: "No workers" };
+            player.workers.forEach((w, index) => {
+                // Use default 'common' if rarity is undefined
+                const r = w.rarity || 'common';
+                if (r === rarity) {
+                    itemsToSell.push(w);
+                    indicesToRemove.push(index);
+                }
+            });
+        } else {
+            return { success: false, reason: "Only workers supported for now" };
+        }
+
+        if (itemsToSell.length === 0) return { success: false, reason: "Nenhum item encontrado com essa raridade." };
+
+        // Remove from player (reverse order to keep indices valid)
+        indicesToRemove.sort((a, b) => b - a);
+        indicesToRemove.forEach(index => {
+            if (itemType === 'worker') player.workers.splice(index, 1);
+        });
+
+        // Create Auctions
+        let count = 0;
+        itemsToSell.forEach(item => {
+            const basePrice = {
+                'common': 100, 'uncommon': 200, 'rare': 500, 'epic': 2000, 'legendary': 10000
+            }[rarity] || 100;
+
+            const auction = {
+                id: Date.now() + Math.random().toString(),
+                sellerId: playerId,
+                sellerName: player.nickname,
+                itemType,
+                item,
+                rarity,
+                price: basePrice,
+                bidderId: null,
+                bidderName: null,
+                endTime: Date.now() + (30 * 60 * 1000), // 30 minutes
+                active: true
+            };
+            this.auctions.push(auction);
+            count++;
+        });
+
+        this.saveGame();
+        return { success: true, count };
+    }
+
     placeBid(playerId, auctionId) {
         const player = this.players[playerId];
         const auction = this.auctions.find(a => a.id === auctionId);

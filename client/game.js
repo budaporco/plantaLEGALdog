@@ -282,6 +282,16 @@ if(sidebar) {
         </div>
         <p>Total: <span id="worker-count">0</span></p>
         <button id="hire-btn" style="width:100%; font-size:0.8rem; margin-bottom:10px;">Contratar (500💰)</button>
+        
+        <div style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
+            <small style="color:#aaa;">Leilão em Massa:</small>
+            <div style="display:flex; gap:2px; flex-wrap:wrap;">
+                <button class="mass-auction-btn" data-rarity="common" style="font-size:0.7rem; flex:1; background:#555;">Comum</button>
+                <button class="mass-auction-btn" data-rarity="uncommon" style="font-size:0.7rem; flex:1; background:#4caf50;">Incomum</button>
+                <button class="mass-auction-btn" data-rarity="rare" style="font-size:0.7rem; flex:1; background:#2196f3;">Raro</button>
+            </div>
+        </div>
+
         <div id="worker-list" style="margin-top:10px;"></div>
         <small>Colhem automaticamente!</small>
     `;
@@ -291,6 +301,16 @@ if(sidebar) {
     elements.workerList = workerPanel.querySelector('#worker-list');
     elements.workerToggle = workerPanel.querySelector('#worker-toggle');
     elements.workerHeader = workerPanel.querySelector('#worker-header');
+
+    // Bind Mass Auction Buttons
+    workerPanel.querySelectorAll('.mass-auction-btn').forEach(btn => {
+        btn.onclick = () => {
+            const rarity = btn.dataset.rarity;
+            if (confirm(`Leiloar TODOS os funcionários de raridade '${rarity}'?`)) {
+                ws.send(JSON.stringify({ type: 'MASS_AUCTION', itemType: 'worker', rarity: rarity }));
+            }
+        };
+    });
 
     // Toggle Logic
     let isWorkerOpen = true;
