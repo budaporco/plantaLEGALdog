@@ -614,7 +614,8 @@ const cropIcons = {
 const TALENTS_CONFIG = {
     'growth_speed': { name: 'Fertilizante Mágico', desc: 'Plantas crescem 1% mais rápido por nível.', baseCost: 1000, costMult: 1.5, maxLevel: 50, icon: '🧪' },
     'sell_bonus': { name: 'Lábia de Comerciante', desc: 'Venda colheitas por 1% a mais por nível.', baseCost: 2000, costMult: 2.0, maxLevel: 20, icon: '💰' },
-    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50, icon: '🏗️' }
+    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50, icon: '🏗️' },
+    'automilk': { name: 'Ordenha Automática', desc: 'Coleta leite das vacas automaticamente.', baseCost: 10000, costMult: 1, maxLevel: 1, icon: '🥛' }
 };
 
 // --- Rendering ---
@@ -829,7 +830,7 @@ function updateSelf(player) {
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px; margin-top:8px;">
                         <button class="up-btn secondary" data-stat="stamina" style="font-size:0.7rem; padding:4px;" title="Stamina: ${w.stats.stamina} (Custa: ${w.level*200}💰)">⚡ ${w.stats.stamina}</button>
                         <button class="up-btn secondary" data-stat="speed" style="font-size:0.7rem; padding:4px;" title="Speed: ${w.stats.speed.toFixed(1)} (Custa: ${w.level*200}💰)">🏃 ${w.stats.speed.toFixed(1)}</button>
-                        <button class="up-btn secondary" data-stat="planting" style="font-size:0.7rem; padding:4px;" title="Planting: ${w.stats.planting} (Custa: ${w.level*200}💰)">🌱 ${w.stats.planting}</button>
+                        <button class="up-btn secondary" data-stat="planting" style="font-size:0.7rem; padding:4px;" title="Planting: ${w.stats.planting} (Custa: ${(w.level*200)*5}💰)">🌱 ${w.stats.planting}</button>
                     </div>
                     
                     ${currentTargetId === playerId ? `

@@ -75,7 +75,8 @@ const MYTHIC_ADVANTAGE = {
 const TALENTS_CONFIG = {
     'growth_speed': { name: 'Fertilizante Mágico', desc: 'Plantas crescem 1% mais rápido por nível.', baseCost: 1000, costMult: 1.5, maxLevel: 50 },
     'sell_bonus': { name: 'Lábia de Comerciante', desc: 'Venda colheitas por 1% a mais por nível.', baseCost: 2000, costMult: 2.0, maxLevel: 20 },
-    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50 }
+    'worker_cost': { name: 'Sindicato Eficiente', desc: 'Reduz custo de upgrade de operários em 1% por nível.', baseCost: 5000, costMult: 1.2, maxLevel: 50 },
+    'automilk': { name: 'Ordenha Automática', desc: 'Coleta leite das vacas automaticamente.', baseCost: 10000, costMult: 1, maxLevel: 1 }
 };
 
 class GameState {
@@ -114,6 +115,8 @@ class GameState {
         this.auctions = []; // Active auctions
         // Check auctions every second
         setInterval(() => this.checkAuctions(), 1000);
+        // Game Tick every second
+        setInterval(() => this.tick(), 1000);
     }
 
     checkAuctions() {
@@ -240,15 +243,11 @@ class GameState {
                 }
             }
         } else {
-            // No bids, return to seller
+            // No bids, System buys for 50%
             if (seller) {
-                if (auction.itemType === 'worker') {
-                    if (!seller.workers) seller.workers = [];
-                    seller.workers.push(auction.item);
-                } else {
-                    if (!seller.animals) seller.animals = [];
-                    seller.animals.push(auction.item);
-                }
+                const halfPrice = Math.floor(auction.price / 2);
+                seller.coins += halfPrice;
+                console.log(`🏦 Sistema comprou item de ${seller.nickname} por ${halfPrice} (50%)`);
             }
         }
     }
@@ -355,7 +354,7 @@ class GameState {
             stats: {
                 stamina: Math.floor(5 * multiplier),     // Actions before rest
                 speed: parseFloat((1 * multiplier).toFixed(1)),       // Speed multiplier (1 = normal)
-                planting: rarity === 'legendary' ? 1 : 0     // Only legendary starts with planting skill
+                planting: rarity === 'common' ? 1 : Math.ceil(multiplier) // Everyone starts with 1, higher rarity gets more
             },
             state: {
                 energy: Math.floor(5 * multiplier),
@@ -533,6 +532,13 @@ class GameState {
         } else if (statType === 'speed') {
             worker.stats.speed += parseFloat((0.2 * multiplier).toFixed(1));
         } else if (statType === 'planting') {
+            // Custo caro para upar planting
+            const plantingCost = finalCost * 5; 
+            if (player.coins < plantingCost) return { success: false, reason: `Upar plantio custa ${plantingCost} moedas!` };
+            // Refund normal cost and charge planting cost
+            player.coins += finalCost;
+            player.coins -= plantingCost;
+
             worker.stats.planting += 1;
         }
 
@@ -1118,34 +1124,107 @@ class GameState {
             // 2. Worker Logic (Advanced)
             if (Array.isArray(player.workers)) {
                 player.workers.forEach(worker => {
-                    // Recuperação de Energia (Resting)
-                    if (worker.state.energy < worker.stats.stamina) {
-                        // Recupera 1 de energia a cada tick (lento)
-                        // Se estiver zerado, recupera mais rápido? Não, linear.
-                        // Mas só trabalha se tiver energia > 0
-                        if (Math.random() < 0.1) { // 10% chance de recuperar 1 energia por segundo
-                            worker.state.energy++;
-                            changed = true;
-                        }
+                    // Estado: Resting (Sem energia)
+                    if (worker.state.energy <= 0) {
+                        worker.state.status = 'resting';
                     }
 
-                    // Trabalho (Harvest)
+                    // Recuperação de Energia (Resting)
+                    if (worker.state.status === 'resting') {
+                        // Recupera energia lentamente
+                        // 10% chance de recuperar 1, mas se estiver descansando, recupera garantido?
+                        // Vamos fazer recuperar 1 a cada 5 segundos (20% chance tick)
+                        if (Math.random() < 0.2) {
+                            worker.state.energy++;
+                            if (worker.state.energy >= worker.stats.stamina) {
+                                worker.state.energy = worker.stats.stamina;
+                                worker.state.status = 'idle'; // Volta ao trabalho
+                            }
+                            changed = true;
+                        }
+                        return; // Não trabalha enquanto descansa
+                    }
+
+                    // Trabalho (Harvest & Plant)
                     if (worker.state.energy > 0) {
+                        worker.state.status = 'working';
+                        
                         // Chance baseada na SPEED. Base 1% * Speed.
-                        // Ex: Speed 1.0 = 1% chance/seg. Speed 5.0 = 5% chance/seg.
                         const workChance = 0.01 * worker.stats.speed;
                         
                         if (Math.random() < workChance) {
+                            // 1. Tenta Colher Primeiro
                             const readyPlotIndex = player.plots.findIndex(p => p.state === 'ready');
                             if (readyPlotIndex !== -1) {
-                                // Realiza o trabalho
                                 this.harvest(player.id, readyPlotIndex, worker.id);
-                                worker.state.energy--; // Gasta energia
+                                worker.state.energy--;
                                 changed = true;
+                            } else {
+                                // 2. Tenta Plantar (Se tiver skill)
+                                if (worker.stats.planting > 0) {
+                                    const emptyPlotIndex = player.plots.findIndex(p => p.state === 'empty');
+                                    if (emptyPlotIndex !== -1) {
+                                        // Dynamic Seed Selection based on Rarity
+                                        let allowedCrops = [];
+                                        switch(worker.rarity) {
+                                            case 'legendary': allowedCrops = ['morango', 'milho', 'abobora', 'cenoura', 'tomate', 'alface']; break;
+                                            case 'epic': allowedCrops = ['milho', 'abobora', 'cenoura', 'tomate', 'alface']; break;
+                                            case 'rare': allowedCrops = ['abobora', 'cenoura', 'tomate', 'alface']; break;
+                                            case 'uncommon': allowedCrops = ['tomate', 'alface']; break;
+                                            default: allowedCrops = ['alface']; break; // common
+                                        }
+
+                                        let seed = null;
+                                        // Try to find the most expensive affordable crop
+                                        for (const cropId of allowedCrops) {
+                                            if (player.coins >= this.crops[cropId].cost) {
+                                                seed = cropId;
+                                                break;
+                                            }
+                                        }
+
+                                        if (seed) {
+                                            this.plant(player.id, emptyPlotIndex, seed);
+                                            worker.state.energy--;
+                                            
+                                            // Multi-plant logic (if skill > 1)
+                                            let extraPlants = worker.stats.planting - 1;
+                                            while(extraPlants > 0 && worker.state.energy > 0) {
+                                                const nextEmpty = player.plots.findIndex(p => p.state === 'empty');
+                                                // Check affordability again for next plant
+                                                if (nextEmpty !== -1 && player.coins >= this.crops[seed].cost) {
+                                                    this.plant(player.id, nextEmpty, seed);
+                                                    worker.state.energy--;
+                                                    extraPlants--;
+                                                } else {
+                                                    break;
+                                                }
+                                            }
+                                            changed = true;
+                                        }
+                                    }
+                                }
                             }
+                        } else {
+                            worker.state.status = 'idle';
                         }
                     }
                 });
+            }
+            
+            // 3. Auto-Milk Talent
+            if (player.talents && player.talents['automilk']) {
+                if (player.animals) {
+                    player.animals.forEach((animal, idx) => {
+                        if (animal.type === 'vaca') {
+                            const info = this.animals['vaca'];
+                            if ((now - animal.lastProduce) >= (info.interval * 1000)) {
+                                this.collectAnimal(player.id, idx);
+                                changed = true;
+                            }
+                        }
+                    });
+                }
             }
         });
         
