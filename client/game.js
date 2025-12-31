@@ -457,31 +457,46 @@ function connect(nickname) {
     // Check if we are running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
-    let wsUrl;
+    // Force WSS (Secure) on production (Render/HTTPS)
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    
-    if (isLocal) {
-        wsUrl = `${protocol}//${window.location.host}`;
-    } else {
-        // Dynamic production URL (Same Origin)
-        wsUrl = `${protocol}//${window.location.host}`;
+    const wsUrl = `${protocol}//${window.location.host}`;
+
+    console.log(`Tentando conectar em: ${wsUrl}`);
+
+    try {
+        ws = new WebSocket(wsUrl);
+    } catch (e) {
+        alert("Erro ao criar WebSocket: " + e.message);
+        return;
     }
 
-    ws = new WebSocket(wsUrl);
-
     ws.onopen = () => {
-        console.log('Connected to server');
+        console.log('Conectado ao servidor!');
         ws.send(JSON.stringify({ type: 'LOGIN', nickname }));
     };
 
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleMessage(data);
+        try {
+            const data = JSON.parse(event.data);
+            handleMessage(data);
+        } catch (e) {
+            console.error("Erro ao processar mensagem:", e);
+        }
     };
 
-    ws.onclose = () => {
-        alert('Desconectado do servidor.');
-        location.reload();
+    ws.onclose = (event) => {
+        console.log("Conexão fechada:", event);
+        if (playerId) { // Só avisa se já estava logado
+            alert('Desconectado do servidor. Recarregue a página.');
+            location.reload();
+        } else {
+            alert('Não foi possível conectar ao servidor. Tente novamente em alguns instantes.');
+        }
+    };
+    
+    ws.onerror = (err) => {
+        console.error("Erro WebSocket:", err);
+        // Não damos alert aqui pois onclose geralmente é chamado em seguida
     };
 }
 
