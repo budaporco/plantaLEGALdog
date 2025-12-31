@@ -434,9 +434,18 @@ if (savedName) {
     setTimeout(() => connect(savedName), 500);
 }
 
+let isConnecting = false;
+
 elements.loginBtn.addEventListener('click', () => {
+    if (isConnecting) return; // Prevent double clicks
+    
     const nickname = elements.nicknameInput.value.trim();
     if (nickname) {
+        // Disable button and show loading state
+        isConnecting = true;
+        elements.loginBtn.disabled = true;
+        elements.loginBtn.textContent = "Conectando...";
+        
         if (elements.autoLoginCheckbox && elements.autoLoginCheckbox.checked) {
             localStorage.setItem('autoLoginName', nickname);
         } else {
@@ -491,6 +500,10 @@ function connect(nickname) {
             location.reload();
         } else {
             alert('Não foi possível conectar ao servidor. Tente novamente em alguns instantes.');
+            // Reset login button state
+            isConnecting = false;
+            elements.loginBtn.disabled = false;
+            elements.loginBtn.textContent = "Entrar";
         }
     };
     
