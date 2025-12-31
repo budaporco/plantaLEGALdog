@@ -471,8 +471,10 @@ class GameState {
 
         // Save to Firebase (Primary Persistence)
         if (db) {
+            // Use update instead of set for safer writes if possible, but set is fine for full state
+            // Add catch to prevent unhandled rejections crashing the server
             db.ref('game_data').set(data).catch(e => {
-                console.error('Firebase save failed:', e.message);
+                console.error('Firebase save failed (Non-fatal):', e.message);
             });
         }
     }
@@ -503,6 +505,11 @@ class GameState {
         // Check if player exists by nickname to avoid duplicates on restart
         const existing = Object.values(this.players).find(p => p.nickname === nickname);
         if (existing) {
+            // Ensure existing player has all necessary fields (Legacy Fix)
+            if (!existing.workers) existing.workers = [];
+            if (!existing.animals) existing.animals = [];
+            if (!existing.talents) existing.talents = {};
+            if (!existing.plots) existing.plots = this.createFarm();
             return existing.id;
         }
 
