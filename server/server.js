@@ -90,7 +90,10 @@ server.on('upgrade', (req, socket, head) => {
     });
     
     socket.on('error', (err) => {
-        console.error("Socket error:", err);
+        // Ignore common disconnect errors to avoid log spam
+        if (err.code !== 'EPIPE' && err.code !== 'ECONNRESET') {
+            console.error("Socket error:", err);
+        }
         handleDisconnect(connection);
     });
 });
